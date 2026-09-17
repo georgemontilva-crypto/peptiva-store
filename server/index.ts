@@ -53,9 +53,9 @@ for (const [from, to] of Object.entries(legacyRedirects)) {
   });
 }
 // Cuentas de cliente llegan en una fase posterior: redirect temporal
-for (const from of ["/my-account", "/login", "/register"]) {
+for (const from of ["/login", "/register", "/affiliate-registration", "/affiliate-reset-password"]) {
   app.get(from, (_req, res) => {
-    res.redirect(302, "/");
+    res.redirect(302, from.startsWith("/affiliate") ? "/affiliate-account" : "/my-account");
   });
 }
 app.get("/all-shop", (_req, res) => {

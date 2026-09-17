@@ -49,6 +49,32 @@ export const contentRouter = router({
       return { ok: true };
     }),
 
+  applyAffiliate: publicProcedure
+    .input(
+      z.object({
+        name: z.string().trim().min(1).max(120),
+        email: z.email().max(191),
+        channel: z.string().trim().min(3).max(300),
+        audience: z.string().trim().max(120).optional(),
+        message: z.string().trim().max(3000).optional(),
+        website: z.string().max(0).optional(), // honeypot
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      rateLimit(`affiliate:${ctx.ip}`, 3, 30 * 60_000);
+      const body = [`Channel: ${input.channel}`, input.audience ? `Audience size: ${input.audience}` : null, input.message ? `\n${input.message}` : null]
+        .filter(Boolean)
+        .join("\n");
+      await db.insert(schema.contactMessages).values({ name: input.name, email: input.email, subject: "Affiliate application", message: body });
+      await sendMail({
+        to: supportEmail(),
+        replyTo: input.email,
+        subject: `Affiliate application — ${input.name}`,
+        html: `<p><strong>${escapeHtml(input.name)}</strong> &lt;${escapeHtml(input.email)}&gt;</p><p>${escapeHtml(body).replace(/\n/g, "<br>")}</p>`,
+      });
+      return { ok: true };
+    }),
+
   subscribe: publicProcedure
     .input(z.object({ email: z.email().max(191), source: z.enum(["newsletter", "age_gate"]) }))
     .mutation(async ({ input, ctx }) => {

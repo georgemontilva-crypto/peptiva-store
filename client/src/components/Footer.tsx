@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MAIN_NAV, POLICY_LINKS, SUPPORT_EMAIL } from "../lib/site";
+import { COMPANY_LINKS, POLICY_LINKS, SUPPORT_EMAIL } from "../lib/site";
 import Logo from "./Logo";
 
 export default function Footer() {
@@ -16,7 +16,7 @@ export default function Footer() {
           </a>
         </div>
         <FooterColumn title="Store" links={[{ to: "/shop", label: "All products" }, { to: "/shop?category=bundle-save", label: "Bundle & save" }, { to: "/coas", label: "Lab results" }]} />
-        <FooterColumn title="Company" links={MAIN_NAV.filter((n) => ["/about-us", "/faq", "/contact"].includes(n.to))} />
+        <FooterColumn title="Company" links={COMPANY_LINKS} />
         <FooterColumn title="Policies" links={POLICY_LINKS} />
       </div>
       <div className="border-t border-white/10">

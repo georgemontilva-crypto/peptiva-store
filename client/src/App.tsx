@@ -15,6 +15,8 @@ import Faq from "./pages/Faq";
 import Coas from "./pages/Coas";
 import Contact from "./pages/Contact";
 import Policy from "./pages/Policy";
+import Affiliate from "./pages/Affiliate";
+import AccountSoon from "./pages/AccountSoon";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -46,6 +48,9 @@ export default function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/coas" element={<Coas />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/affiliate" element={<Affiliate />} />
+          <Route path="/affiliate-account" element={<AccountSoon kind="affiliate" />} />
+          <Route path="/my-account" element={<AccountSoon kind="customer" />} />
           {["shipping-policy", "return-refund", "terms-conditions", "privacy-policy"].map((slug) => (
             <Route key={slug} path={`/${slug}`} element={<Policy slug={slug} />} />
           ))}

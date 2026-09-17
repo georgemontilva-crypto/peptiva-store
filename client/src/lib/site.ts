@@ -13,10 +13,38 @@ export const POLICY_LINKS = [
   { to: "/privacy-policy", label: "Privacy policy" },
 ];
 
-export const MAIN_NAV = [
-  { to: "/shop", label: "Shop" },
-  { to: "/coas", label: "Lab results" },
-  { to: "/about-us", label: "About" },
+export type NavItem = { label: string; to?: string; children?: { to: string; label: string; description?: string }[] };
+
+/** Menú principal: mismo orden que el sitio de WordPress. */
+export const MAIN_NAV: NavItem[] = [
+  { label: "Home", to: "/" },
+  { label: "Contact", to: "/contact" },
+  { label: "COAs", to: "/coas" },
+  {
+    label: "More",
+    children: [
+      { to: "/shop", label: "Shop", description: "All research peptides" },
+      { to: "/about-us", label: "About Us", description: "Our standards and mission" },
+      { to: "/faq", label: "FAQ", description: "Purity, shipping and storage" },
+    ],
+  },
+  {
+    label: "User",
+    children: [{ to: "/my-account", label: "My account", description: "Orders and account details" }],
+  },
+  {
+    label: "Affiliate Program",
+    children: [
+      { to: "/affiliate", label: "Affiliate Program", description: "Earn 10% on referred sales" },
+      { to: "/affiliate#apply", label: "Apply to join", description: "Send your application" },
+      { to: "/affiliate-account", label: "Affiliate account", description: "Links and commissions" },
+    ],
+  },
+];
+
+export const COMPANY_LINKS = [
+  { to: "/about-us", label: "About Us" },
   { to: "/faq", label: "FAQ" },
   { to: "/contact", label: "Contact" },
+  { to: "/affiliate", label: "Affiliate Program" },
 ];
