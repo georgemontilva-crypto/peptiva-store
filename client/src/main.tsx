@@ -10,8 +10,21 @@ import App from "./App";
 import "./styles.css";
 
 function Root() {
-  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 60_000, retry: 2, retryDelay: (n) => Math.min(800 * 2 ** n, 4000), refetchOnWindowFocus: false } } }));
-  const [trpcClient] = useState(() => trpc.createClient({ links: [httpBatchLink({ url: "/trpc", transformer: superjson })] }));
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 60_000, retry: 3, retryDelay: (n) => Math.min(500 * 2 ** n, 3000), refetchOnWindowFocus: false } } }));
+  const [trpcClient] = useState(() => trpc.createClient({ links: [
+          httpBatchLink({
+            url: "/trpc",
+            transformer: superjson,
+            // Lecturas (GET): si no responden en 15 s se cortan y React Query reintenta, así la página nunca queda esperando.
+            // Las mutaciones (POST, p. ej. abrir el pago) no llevan este límite.
+            fetch: (input, init) => {
+              if ((init?.method ?? "GET").toUpperCase() !== "GET") return fetch(input, init);
+              const timeout = AbortSignal.timeout(15_000);
+              const signal = init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout;
+              return fetch(input, { ...init, signal });
+            },
+          }),
+        ] }));
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>

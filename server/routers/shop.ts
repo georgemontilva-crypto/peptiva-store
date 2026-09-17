@@ -3,7 +3,7 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
-import { publicProcedure, rateLimit, router } from "../trpc";
+import { externalProcedure, publicProcedure, rateLimit, router } from "../trpc";
 import { quoteCart } from "../lib/pricing";
 import { bankfulConfigured, createHostedPayment } from "../lib/bankful";
 import { getOrderWithItems, orderNumber } from "../lib/orders";
@@ -40,7 +40,7 @@ export const shopRouter = router({
 
   paymentsEnabled: publicProcedure.query(() => bankfulConfigured()),
 
-  placeOrder: publicProcedure.input(checkoutInput).mutation(async ({ input, ctx }) => {
+  placeOrder: externalProcedure.input(checkoutInput).mutation(async ({ input, ctx }) => {
     rateLimit(`order:${ctx.ip}`, 8, 10 * 60_000);
     if (!bankfulConfigured()) {
       throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Card payments are temporarily unavailable. Please contact support." });

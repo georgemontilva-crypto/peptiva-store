@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import superjson from "superjson";
 import { ZodError, z } from "zod";
+import { withTimeout } from "./db";
 
 export function createContext({ req }: CreateExpressContextOptions) {
   const proto = (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0] ?? req.protocol;
@@ -22,7 +23,23 @@ const t = initTRPC.context<Context>().create({
 });
 
 export const router = t.router;
-export const publicProcedure = t.procedure;
+
+/** Ninguna llamada puede quedarse colgada: a los 10 s responde error y el navegador reintenta solo. */
+const timeoutGuard = t.middleware(async ({ next, path }) => {
+  try {
+    return await withTimeout(next(), 10_000);
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("La consulta superó")) {
+      console.error(`[trpc] ${path} excedió el tiempo límite`);
+      throw new TRPCError({ code: "TIMEOUT", message: "The request took too long. Retrying…" });
+    }
+    throw err;
+  }
+});
+
+export const publicProcedure = t.procedure.use(timeoutGuard);
+/** Sin límite de 10 s: solo para operaciones que esperan a un tercero (crear pago en Bankful). */
+export const externalProcedure = t.procedure;
 
 /** Límite simple en memoria por IP y acción. */
 const hits = new Map<string, number[]>();

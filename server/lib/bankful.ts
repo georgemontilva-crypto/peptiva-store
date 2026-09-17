@@ -112,7 +112,7 @@ export async function createHostedPayment(order: OrderForPayment, baseUrl: strin
   let lastBody = "";
   for (const init of attempts) {
     try {
-      const res = await fetch(hostedPageUrl(), { method: "POST", signal: AbortSignal.timeout(30_000), ...init });
+      const res = await fetch(hostedPageUrl(), { method: "POST", signal: AbortSignal.timeout(20_000), ...init });
       lastBody = await res.text();
       const redirect = extractRedirect(lastBody);
       if (redirect) return redirect;

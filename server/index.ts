@@ -61,11 +61,14 @@ app.get("/shop", (req, res, next) => {
 
 if (process.env.NODE_ENV === "production") {
   const publicDir = path.resolve(process.cwd(), "dist/public");
+  // Archivos con hash: caché larga. Si piden uno que ya no existe (deploy nuevo), 404 real, nunca el HTML.
+  app.use("/assets", express.static(path.join(publicDir, "assets"), { immutable: true, maxAge: "1y", fallthrough: false }));
   app.use(express.static(publicDir, { index: false, maxAge: "1h" }));
-  app.use("/assets", express.static(path.join(publicDir, "assets"), { immutable: true, maxAge: "1y" }));
   const indexHtml = path.join(publicDir, "index.html");
   app.use((req, res, next) => {
     if (req.method !== "GET" || !fs.existsSync(indexHtml)) return next();
+    // El HTML nunca se cachea: así cada visita toma el build más reciente
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.sendFile(indexHtml);
   });
 }
