@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { usePageMeta } from "../lib/format";
 import { HERO_VIALS } from "../lib/site";
-import ProductCard from "../components/ProductCard";
+import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import NewsletterForm from "../components/NewsletterForm";
 
 const SEALS = ["≥99% HPLC purity", "Mass spec verified", "Third-party tested", "COA for every product", "Lyophilized & sealed", "Ships same or next day", "Cold-pack packaging", "U.S. based support"];
@@ -99,7 +99,7 @@ export default function Home() {
           <Link to="/shop" className="font-semibold text-navy underline underline-offset-4">All {products?.length ?? ""} products</Link>
         </div>
         <div className="mt-10 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-4">
-          {products?.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
+          {products ? products.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />) : Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
         </div>
       </section>
 

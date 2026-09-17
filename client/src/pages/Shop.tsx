@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { usePageMeta } from "../lib/format";
-import ProductCard from "../components/ProductCard";
+import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
+import LoadError from "../components/LoadError";
 
 const SORTS = [
   { value: "featured", label: "Featured" },
@@ -61,8 +62,12 @@ export default function Shop() {
         </div>
       </div>
 
-      {products.isLoading ? (
-        <p className="mt-12 text-slate">Loading products…</p>
+      {products.isError ? (
+        <div className="mt-10"><LoadError what="the products" onRetry={() => products.refetch()} /></div>
+      ) : products.isPending ? (
+        <div className="mt-12 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
+        </div>
       ) : list.length ? (
         <>
           <p className="mt-6 text-sm text-muted">{list.length} {list.length === 1 ? "product" : "products"}</p>

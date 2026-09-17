@@ -28,7 +28,19 @@ export default function Product() {
 
   usePageMeta(product ? (product.seoTitle ?? `${product.name} — Peptiva Supplies`) : undefined, product?.seoDescription);
 
-  if (isLoading) return <div className="mx-auto h-[70vh] max-w-6xl px-5 py-16" aria-busy="true" />;
+  if (isLoading) {
+    return (
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-[1.05fr_1fr]" aria-busy="true">
+        <div className="skeleton aspect-square rounded-[2rem]" />
+        <div className="space-y-4 pt-4">
+          <div className="skeleton h-10 w-2/3 rounded-full" />
+          <div className="skeleton h-8 w-1/4 rounded-full" />
+          <div className="skeleton mt-8 h-24 rounded-2xl" />
+          <div className="skeleton h-14 rounded-full" />
+        </div>
+      </div>
+    );
+  }
   if (!product) return <NotFound />;
 
   const variant = product.variants.find((v) => v.id === variantId);
@@ -47,9 +59,14 @@ export default function Product() {
       </nav>
 
       <div className="mt-6 grid gap-10 md:grid-cols-[1.05fr_1fr] lg:gap-16">
-        <div className="relative aspect-square overflow-hidden rounded-[2rem] bg-mist md:sticky md:top-32 md:self-start">
-          <div className="lab-grid absolute inset-0 [mask-image:radial-gradient(circle,black,transparent_75%)]" aria-hidden />
-          {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="relative h-full w-full object-contain p-12" /> : null}
+        <div className="relative aspect-square overflow-hidden rounded-[2rem] bg-white ring-1 ring-line md:sticky md:top-32 md:self-start">
+          {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full rounded-[2rem] object-cover" /> : null}
+          {coa ? (
+            <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-navy shadow-sm">
+              <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 text-teal" fill="currentColor" aria-hidden><path d="M10 1.5 3 4.5v5c0 4.2 3 7.8 7 9 4-1.2 7-4.8 7-9v-5l-7-3zm-1.2 12.1L5.6 10.4l1.2-1.2 2 2 4.4-4.4 1.2 1.2-5.6 5.6z" /></svg>
+              Lab verified
+            </span>
+          ) : null}
         </div>
 
         <div className="md:pt-4">

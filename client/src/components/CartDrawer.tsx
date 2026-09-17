@@ -56,8 +56,8 @@ export default function CartDrawer() {
               {isLoading && !quote ? <li className="py-6 text-sm text-slate">Updating prices…</li> : null}
               {quote?.lines.map((l) => (
                 <li key={`${l.productId}-${l.variantId}`} className="flex gap-4 py-5">
-                  <div className="h-20 w-20 shrink-0 rounded-xl bg-mist">
-                    {l.imageUrl ? <img src={l.imageUrl} alt="" className="h-full w-full object-contain p-2" /> : null}
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-white ring-1 ring-line">
+                    {l.imageUrl ? <img src={l.imageUrl} alt="" className="h-full w-full rounded-2xl object-cover" /> : null}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex justify-between gap-3">

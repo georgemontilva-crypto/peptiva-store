@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
 import AgeGate from "./components/AgeGate";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Product from "./pages/Product";
@@ -27,6 +28,7 @@ export default function App() {
       </a>
       <Header />
       <main id="main" className="flex-1">
+        <ErrorBoundary resetKey={pathname}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
@@ -42,6 +44,7 @@ export default function App() {
           ))}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </ErrorBoundary>
       </main>
       <Footer />
       <CartDrawer />

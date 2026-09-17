@@ -129,8 +129,8 @@ export default function Checkout() {
                 <ul className="mt-5 space-y-4">
                   {quote.lines.map((l) => (
                     <li key={`${l.productId}-${l.variantId}`} className="flex items-center gap-3">
-                      <div className="relative h-14 w-14 shrink-0 rounded-xl bg-white">
-                        {l.imageUrl ? <img src={l.imageUrl} alt="" className="h-full w-full object-contain p-1.5" /> : null}
+                      <div className="relative h-14 w-14 shrink-0 rounded-2xl bg-white ring-1 ring-line">
+                        {l.imageUrl ? <img src={l.imageUrl} alt="" className="h-full w-full rounded-2xl object-cover" /> : null}
                         <span className="absolute -right-1.5 -top-1.5 rounded-full bg-navy px-1.5 text-xs font-bold leading-5 text-white">{l.quantity}</span>
                       </div>
                       <div className="min-w-0 flex-1 text-sm">

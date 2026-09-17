@@ -10,7 +10,7 @@ import App from "./App";
 import "./styles.css";
 
 function Root() {
-  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 60_000, retry: 1, refetchOnWindowFocus: false } } }));
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 60_000, retry: 2, retryDelay: (n) => Math.min(800 * 2 ** n, 4000), refetchOnWindowFocus: false } } }));
   const [trpcClient] = useState(() => trpc.createClient({ links: [httpBatchLink({ url: "/trpc", transformer: superjson })] }));
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
