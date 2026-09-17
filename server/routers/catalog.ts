@@ -3,6 +3,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
 import { publicProcedure, router } from "../trpc";
+import { mediaUrl } from "../lib/media";
 
 const { products, productVariants, categories, productCategories, coaLots } = schema;
 
@@ -39,7 +40,7 @@ export const catalogRouter = router({
         .where(and(...where))
         .orderBy(asc(products.sortOrder));
       const vmap = await variantsFor(rows.map((r) => r.id));
-      return rows.map((r) => ({ ...r, variantCount: vmap.get(r.id)?.length ?? 0 }));
+      return rows.map((r) => ({ ...r, imageUrl: mediaUrl(r.imageUrl), variantCount: vmap.get(r.id)?.length ?? 0 }));
     }),
 
   productBySlug: publicProcedure.input(z.object({ slug: z.string().min(1).max(191) })).query(async ({ input }) => {
@@ -52,6 +53,6 @@ export const catalogRouter = router({
         .where(eq(productCategories.productId, product.id)),
       db.select().from(coaLots).where(eq(coaLots.productId, product.id)),
     ]);
-    return { ...product, variants, categories: cats, coas };
+    return { ...product, imageUrl: mediaUrl(product.imageUrl), gallery: (product.gallery ?? []).map((g) => mediaUrl(g) ?? g), variants, categories: cats, coas };
   }),
 });

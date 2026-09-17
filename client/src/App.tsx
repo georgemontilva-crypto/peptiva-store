@@ -20,6 +20,9 @@ import NotFound from "./pages/NotFound";
 export default function App() {
   const { pathname } = useLocation();
   useEffect(() => window.scrollTo(0, 0), [pathname]);
+  useEffect(() => {
+    (window as unknown as { __appMounted?: boolean }).__appMounted = true;
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">

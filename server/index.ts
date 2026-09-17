@@ -5,6 +5,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
 import { createContext } from "./trpc";
 import { handleBankfulCallback } from "./lib/bankful-callback";
+import { handleMedia } from "./lib/media";
 import { runMigrations } from "./db/migrate";
 import { seedIfEmpty } from "./db/seed";
 
@@ -14,6 +15,13 @@ app.set("trust proxy", 1);
 
 app.get("/healthz", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/media/wp/*path", (req, res) => {
+  handleMedia(req, res).catch((err) => {
+    console.error("[media] error", err);
+    res.status(500).end();
+  });
 });
 
 app.use("/trpc", createExpressMiddleware({ router: appRouter, createContext }));

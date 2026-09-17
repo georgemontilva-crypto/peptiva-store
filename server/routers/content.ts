@@ -5,6 +5,7 @@ import { db, schema } from "../db";
 import { publicProcedure, rateLimit, router } from "../trpc";
 import content from "../data/content.json";
 import { escapeHtml, sendMail, supportEmail } from "../lib/mail";
+import { mediaUrl } from "../lib/media";
 
 export const contentRouter = router({
   page: publicProcedure.input(z.object({ slug: z.string().max(64) })).query(({ input }) => {
@@ -15,15 +16,15 @@ export const contentRouter = router({
 
   faq: publicProcedure.query(() => content.faq),
 
-  coas: publicProcedure.query(() =>
-    db
+  coas: publicProcedure.query(async () =>
+    (await db
       .select({
         id: schema.coaLots.id, lotNumber: schema.coaLots.lotNumber, purity: schema.coaLots.purity, reportUrl: schema.coaLots.reportUrl,
         testedAt: schema.coaLots.testedAt, productName: schema.products.name, productSlug: schema.products.slug, imageUrl: schema.products.imageUrl,
       })
       .from(schema.coaLots)
       .innerJoin(schema.products, eq(schema.products.id, schema.coaLots.productId))
-      .orderBy(asc(schema.products.sortOrder)),
+      .orderBy(asc(schema.products.sortOrder))).map((c) => ({ ...c, imageUrl: mediaUrl(c.imageUrl) })),
   ),
 
   sendContact: publicProcedure

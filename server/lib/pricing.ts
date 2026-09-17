@@ -1,5 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db, schema } from "../db";
+import { mediaUrl } from "./media";
 
 export type CartLineInput = { productId: number; variantId: number | null; quantity: number };
 
@@ -54,7 +55,7 @@ export async function quoteCart(lines: CartLineInput[], couponCode?: string | nu
       slug: product.slug,
       name: product.name,
       variantLabel: variant?.label ?? null,
-      imageUrl: product.imageUrl,
+      imageUrl: mediaUrl(product.imageUrl),
       unitPrice: toMoney(unit),
       quantity,
       bundlePercent,

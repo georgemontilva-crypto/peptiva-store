@@ -1,7 +1,7 @@
 export const HERO_VIALS = [
-  "https://peptivasupplies.com/wp-content/uploads/2026/08/ps1.png",
-  "https://peptivasupplies.com/wp-content/uploads/2026/08/ps2.png",
-  "https://peptivasupplies.com/wp-content/uploads/2026/08/ps3.png",
+  "/media/wp/2026/08/ps1.png",
+  "/media/wp/2026/08/ps2.png",
+  "/media/wp/2026/08/ps3.png",
 ];
 
 export const SUPPORT_EMAIL = "support@peptivasupplies.com";

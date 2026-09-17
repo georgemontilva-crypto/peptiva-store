@@ -19,9 +19,11 @@ function Root() {
             // Las mutaciones (POST, p. ej. abrir el pago) no llevan este límite.
             fetch: (input, init) => {
               if ((init?.method ?? "GET").toUpperCase() !== "GET") return fetch(input, init);
-              const timeout = AbortSignal.timeout(15_000);
-              const signal = init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout;
-              return fetch(input, { ...init, signal });
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), 15_000);
+              // Compatible con Safari antiguo (sin AbortSignal.any / AbortSignal.timeout)
+              init?.signal?.addEventListener("abort", () => controller.abort(), { once: true });
+              return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
             },
           }),
         ] }));
@@ -37,6 +39,19 @@ function Root() {
     </trpc.Provider>
   );
 }
+
+// Si una imagen externa no carga, se reemplaza por un marcador en vez de dejar un hueco en blanco
+const IMG_FALLBACK =
+  "data:image/svg+xml," +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#f2f5f9"/><rect x="170" y="110" width="60" height="26" rx="6" fill="#15426e"/><rect x="155" y="136" width="90" height="160" rx="18" fill="none" stroke="#15426e" stroke-width="8"/><rect x="163" y="210" width="74" height="78" rx="10" fill="#0fb0b3"/></svg>');
+document.addEventListener(
+  "error",
+  (e) => {
+    const el = e.target;
+    if (el instanceof HTMLImageElement && el.src !== IMG_FALLBACK) el.src = IMG_FALLBACK;
+  },
+  true,
+);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
