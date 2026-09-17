@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "../db";
 import { mediaUrl } from "./media";
 
@@ -21,7 +21,7 @@ export type Quote = Awaited<ReturnType<typeof quoteCart>>;
  * Calcula el carrito con precios de la base de datos (nunca confía en precios del cliente).
  * Orden: precio de lista → descuento por cantidad por línea → cupón sobre el total con descuento.
  */
-export async function quoteCart(lines: CartLineInput[], couponCode?: string | null) {
+export async function quoteCart(lines: CartLineInput[], couponCode?: string | null, opts: { email?: string | null } = {}) {
   const productIds = [...new Set(lines.map((l) => l.productId))];
   const products = productIds.length
     ? await db
@@ -68,18 +68,37 @@ export async function quoteCart(lines: CartLineInput[], couponCode?: string | nu
   const afterBundle = priced.reduce((s, l) => s + l.lineTotal, 0);
 
   let couponDiscountCents = 0;
-  let coupon: { code: string; label: string } | null = null;
+  let coupon: { code: string; label: string; affiliateId: number | null } | null = null;
   let couponError: string | null = null;
   const code = couponCode?.trim().toLowerCase();
   if (code) {
     const [c] = await db.select().from(schema.coupons).where(eq(schema.coupons.code, code));
+    const now = Date.now();
     if (!c || !c.active) couponError = "This discount code is not valid.";
-    else if (c.expiresAt && c.expiresAt.getTime() < Date.now()) couponError = "This discount code has expired.";
+    else if (c.startsAt && c.startsAt.getTime() > now) couponError = "This discount code is not active yet.";
+    else if (c.expiresAt && c.expiresAt.getTime() < now) couponError = "This discount code has expired.";
     else if (c.usageLimit != null && c.usageCount >= c.usageLimit) couponError = "This discount code has reached its usage limit.";
-    else {
-      couponDiscountCents =
-        c.type === "percent" ? Math.round((afterBundle * Number(c.amount)) / 100) : Math.min(afterBundle, cents(c.amount));
-      coupon = { code: c.code, label: c.type === "percent" ? `${Number(c.amount)}% off` : `$${Number(c.amount)} off` };
+    else if (c.minSubtotal != null && afterBundle < cents(c.minSubtotal)) {
+      couponError = `This code requires a minimum order of $${Number(c.minSubtotal).toFixed(2)}.`;
+    } else {
+      if (c.perCustomerLimit != null && opts.email) {
+        const [used] = await db
+          .select({ n: count() })
+          .from(schema.orders)
+          .where(
+            and(
+              eq(schema.orders.couponCode, c.code),
+              eq(schema.orders.email, opts.email.trim().toLowerCase()),
+              sql`${schema.orders.status} IN ('paid','on_hold','shipped','completed')`,
+            ),
+          );
+        if ((used?.n ?? 0) >= c.perCustomerLimit) couponError = "You've already used this discount code.";
+      }
+      if (!couponError) {
+        couponDiscountCents =
+          c.type === "percent" ? Math.round((afterBundle * Number(c.amount)) / 100) : Math.min(afterBundle, cents(c.amount));
+        coupon = { code: c.code, label: c.type === "percent" ? `${Number(c.amount)}% off` : `$${Number(c.amount)} off`, affiliateId: c.affiliateId };
+      }
     }
   }
 

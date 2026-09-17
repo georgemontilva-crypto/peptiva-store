@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getAffiliateCode } from "../lib/affiliate";
 import { Link, useSearchParams } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { useQuote } from "../lib/useQuote";
@@ -26,6 +27,30 @@ export default function Checkout() {
       window.location.href = redirectUrl;
     },
   });
+
+  // Guarda el carrito cuando hay un email válido, para poder enviar recordatorios si no termina la compra
+  const saveCart = trpc.shop.saveCart.useMutation();
+  const lastSaved = useRef("");
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim());
+  const persistCart = () => {
+    if (!emailValid || !cart.items.length) return;
+    const key = JSON.stringify([form.email.trim().toLowerCase(), form.firstName.trim(), cart.items, cart.couponCode]);
+    if (key === lastSaved.current) return;
+    lastSaved.current = key;
+    saveCart.mutate({
+      token: cart.token,
+      email: form.email.trim(),
+      firstName: form.firstName.trim() || null,
+      lines: cart.items,
+      couponCode: cart.couponCode,
+      affiliateCode: getAffiliateCode(),
+    });
+  };
+  useEffect(() => {
+    if (!lastSaved.current) return; // solo re-guarda si ya se guardó una vez
+    const t = window.setTimeout(persistCart, 800);
+    return () => window.clearTimeout(t);
+  }, [cart.items, cart.couponCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = <K extends keyof Form>(key: K) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value }));
@@ -69,6 +94,8 @@ export default function Checkout() {
             researchAcknowledged: true,
             lines: cart.items,
             couponCode: cart.couponCode,
+            cartToken: cart.token,
+            affiliateCode: getAffiliateCode(),
           });
         }}
       >
@@ -77,7 +104,7 @@ export default function Checkout() {
             <h2 className="text-xl font-medium">Contact</h2>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <Field label="Email" error={errorFor("email")} className="sm:col-span-2">
-                <input type="email" autoComplete="email" required value={form.email} onChange={set("email")} className="field" />
+                <input type="email" autoComplete="email" required value={form.email} onChange={set("email")} onBlur={persistCart} className="field" />
               </Field>
               <Field label="Phone" error={errorFor("phone")} className="sm:col-span-2">
                 <input type="tel" autoComplete="tel" required value={form.phone} onChange={set("phone")} className="field" />
@@ -90,7 +117,7 @@ export default function Checkout() {
             <p className="mt-1 text-sm text-slate">We currently ship within the United States only.</p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <Field label="First name" error={errorFor("firstName")}>
-                <input autoComplete="given-name" required value={form.firstName} onChange={set("firstName")} className="field" />
+                <input autoComplete="given-name" required value={form.firstName} onChange={set("firstName")} onBlur={persistCart} className="field" />
               </Field>
               <Field label="Last name" error={errorFor("lastName")}>
                 <input autoComplete="family-name" required value={form.lastName} onChange={set("lastName")} className="field" />

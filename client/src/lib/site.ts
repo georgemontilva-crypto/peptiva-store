@@ -30,14 +30,17 @@ export const MAIN_NAV: NavItem[] = [
   },
   {
     label: "User",
-    children: [{ to: "/my-account", label: "My account", description: "Orders and account details" }],
+    children: [
+      { to: "/track-order", label: "Track order", description: "Status and tracking number" },
+      { to: "/my-account", label: "My account", description: "Orders and account details" },
+    ],
   },
   {
     label: "Affiliate Program",
     children: [
       { to: "/affiliate", label: "Affiliate Program", description: "Earn 10% on referred sales" },
       { to: "/affiliate#apply", label: "Apply to join", description: "Send your application" },
-      { to: "/affiliate-account", label: "Affiliate account", description: "Links and commissions" },
+      { to: "/affiliate-account", label: "Affiliate login", description: "Your link, clicks and commissions" },
     ],
   },
 ];

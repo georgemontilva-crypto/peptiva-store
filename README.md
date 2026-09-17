@@ -23,3 +23,19 @@ npm run dev            # API en :3001, web en :5173
 
 - Build: `npm run build` · Start: `npm start`
 - Variables: `DATABASE_URL=${{MySQL.MYSQL_URL}}`
+
+## Admin
+
+`/admin` — pedidos y seguimiento, carritos abandonados, cupones, afiliados, comisiones, mensajes y ajustes.
+El primer administrador se crea al arrancar con `ADMIN_EMAIL` y `ADMIN_PASSWORD` (solo si no existe ninguno).
+
+## Afiliados
+
+- Enlace: cualquier URL con `?ref=CODIGO` (también acepta `?aff=`, el parámetro de SliceWP).
+- Atribución: cupón del afiliado > enlace (ventana configurable, 30 días por defecto). Sin auto-referidos.
+- Comisión: se crea al pagarse el pedido, se aprueba al marcarlo Delivered y se rechaza si se cancela o reembolsa.
+- Portal: `/affiliate-account`.
+
+## Tareas programadas
+
+Cada 5 minutos el servidor envía los recordatorios de carritos abandonados (requiere Resend).

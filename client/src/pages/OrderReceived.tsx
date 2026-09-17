@@ -78,6 +78,8 @@ export default function OrderReceived() {
         </div>
       </div>
 
+      <Link to={`/track-order?order=${o.number}&email=${encodeURIComponent(o.email)}`} className="btn btn-ghost mt-8">Track this order</Link>
+
       <p className="mt-8 text-sm text-slate">
         Questions about this order? Email <a href="mailto:support@peptivasupplies.com" className="font-semibold text-navy underline">support@peptivasupplies.com</a> with your order number.
       </p>

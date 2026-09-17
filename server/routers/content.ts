@@ -4,7 +4,8 @@ import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
 import { publicProcedure, rateLimit, router } from "../trpc";
 import content from "../data/content.json";
-import { escapeHtml, sendMail, supportEmail } from "../lib/mail";
+import { emailLayout, escapeHtml, sendMail, supportEmail } from "../lib/mail";
+import { uniqueAffiliateCode } from "../lib/affiliates";
 import { mediaUrl } from "../lib/media";
 
 export const contentRouter = router({
@@ -62,15 +63,30 @@ export const contentRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       rateLimit(`affiliate:${ctx.ip}`, 3, 30 * 60_000);
-      const body = [`Channel: ${input.channel}`, input.audience ? `Audience size: ${input.audience}` : null, input.message ? `\n${input.message}` : null]
-        .filter(Boolean)
-        .join("\n");
-      await db.insert(schema.contactMessages).values({ name: input.name, email: input.email, subject: "Affiliate application", message: body });
+      const email = input.email.toLowerCase();
+      const [existing] = await db.select().from(schema.affiliates).where(eq(schema.affiliates.email, email));
+      if (existing && existing.status !== "rejected") {
+        throw new TRPCError({ code: "CONFLICT", message: existing.status === "active" ? "This email already has an affiliate account. Sign in instead." : "We already have your application and will reply by email." });
+      }
+      const values = {
+        name: input.name,
+        email,
+        channel: input.channel,
+        audience: input.audience || null,
+        applicationNote: input.message || null,
+        status: "pending" as const,
+      };
+      if (existing) await db.update(schema.affiliates).set(values).where(eq(schema.affiliates.id, existing.id));
+      else await db.insert(schema.affiliates).values({ ...values, code: await uniqueAffiliateCode(input.name) });
       await sendMail({
         to: supportEmail(),
-        replyTo: input.email,
+        replyTo: email,
         subject: `Affiliate application — ${input.name}`,
-        html: `<p><strong>${escapeHtml(input.name)}</strong> &lt;${escapeHtml(input.email)}&gt;</p><p>${escapeHtml(body).replace(/\n/g, "<br>")}</p>`,
+        html: emailLayout({
+          title: "New affiliate application",
+          body: `<p><strong>${escapeHtml(input.name)}</strong> &lt;${escapeHtml(email)}&gt;</p><p>Channel: ${escapeHtml(input.channel)}<br>Audience: ${escapeHtml(input.audience ?? "—")}</p>${input.message ? `<p>${escapeHtml(input.message).replace(/\n/g, "<br>")}</p>` : ""}`,
+          cta: { label: "Review in admin", url: `${ctx.baseUrl}/admin/affiliates` },
+        }),
       });
       return { ok: true };
     }),

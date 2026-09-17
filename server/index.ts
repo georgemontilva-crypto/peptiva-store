@@ -7,7 +7,8 @@ import { createContext } from "./trpc";
 import { handleBankfulCallback } from "./lib/bankful-callback";
 import { handleMedia } from "./lib/media";
 import { runMigrations } from "./db/migrate";
-import { seedIfEmpty } from "./db/seed";
+import { seedAdmin, seedIfEmpty } from "./db/seed";
+import { runAbandonedCartJob } from "./lib/abandoned";
 
 const app = express();
 app.disable("x-powered-by");
@@ -53,7 +54,7 @@ for (const [from, to] of Object.entries(legacyRedirects)) {
   });
 }
 // Cuentas de cliente llegan en una fase posterior: redirect temporal
-for (const from of ["/login", "/register", "/affiliate-registration", "/affiliate-reset-password"]) {
+for (const from of ["/login", "/register", "/affiliate-registration", "/affiliate-reset-password", "/affiliate-login"]) {
   app.get(from, (_req, res) => {
     res.redirect(302, from.startsWith("/affiliate") ? "/affiliate-account" : "/my-account");
   });
@@ -86,6 +87,12 @@ const port = Number(process.env.PORT ?? 3001);
 async function main() {
   await runMigrations();
   await seedIfEmpty();
+  await seedAdmin();
+
+  // Recordatorios de carritos abandonados cada 5 minutos
+  const job = () => runAbandonedCartJob().catch((err) => console.error("[abandoned] error en la tarea", err));
+  setTimeout(job, 60_000);
+  setInterval(job, 5 * 60_000);
   app.listen(port, () => console.log(`[server] escuchando en :${port}`));
 }
 

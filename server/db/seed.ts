@@ -2,6 +2,7 @@ import { count, eq } from "drizzle-orm";
 import { db, schema } from "./index";
 import catalog from "../data/catalog.json";
 import content from "../data/content.json";
+import { hashPassword } from "../lib/auth";
 
 type CatalogProduct = (typeof catalog.products)[number];
 
@@ -106,4 +107,25 @@ export async function seedIfEmpty() {
     if (values.length) await db.insert(schema.coaLots).values(values);
     console.log(`[seed] ${values.length} COAs`);
   }
+}
+
+/**
+ * Crea el primer administrador con ADMIN_EMAIL y ADMIN_PASSWORD si todavía no hay ninguno.
+ * Después la contraseña se cambia desde Admin → Settings (la variable ya no se usa).
+ */
+export async function seedAdmin() {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  const [row] = await db.select({ n: count() }).from(schema.admins);
+  if ((row?.n ?? 0) > 0) return;
+  if (!email || !password) {
+    console.warn("[seed] No hay administradores. Define ADMIN_EMAIL y ADMIN_PASSWORD para crear el primero.");
+    return;
+  }
+  if (password.length < 10) {
+    console.warn("[seed] ADMIN_PASSWORD debe tener al menos 10 caracteres; no se creó el administrador.");
+    return;
+  }
+  await db.insert(schema.admins).values({ email, passwordHash: hashPassword(password), name: "Admin" });
+  console.log(`[seed] administrador creado: ${email}`);
 }

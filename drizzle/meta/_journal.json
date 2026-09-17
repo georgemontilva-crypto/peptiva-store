@@ -15,6 +15,13 @@
       "when": 1789619582617,
       "tag": "0001_checkout_content",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1789632232421,
+      "tag": "0002_affiliates_admin_tracking",
+      "breakpoints": true
     }
   ]
 }

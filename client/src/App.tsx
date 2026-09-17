@@ -16,7 +16,14 @@ import Coas from "./pages/Coas";
 import Contact from "./pages/Contact";
 import Policy from "./pages/Policy";
 import Affiliate from "./pages/Affiliate";
-import AccountSoon from "./pages/AccountSoon";
+import MyAccount from "./pages/MyAccount";
+import AffiliateAccount from "./pages/AffiliateAccount";
+import AffiliateSetPassword from "./pages/AffiliateSetPassword";
+import TrackOrder from "./pages/TrackOrder";
+import CartRecover from "./pages/CartRecover";
+import CartUnsubscribe from "./pages/CartUnsubscribe";
+import AffiliateTracker from "./components/AffiliateTracker";
+import AdminApp from "./admin/AdminApp";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -30,8 +37,11 @@ export default function App() {
     (window as unknown as { __appMounted?: boolean }).__appMounted = true;
   }, []);
 
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return <AdminApp />;
+
   return (
     <div className="flex min-h-screen flex-col">
+      <AffiliateTracker />
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-white focus:px-3 focus:py-2">
         Skip to content
       </a>
@@ -49,8 +59,12 @@ export default function App() {
           <Route path="/coas" element={<Coas />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/affiliate" element={<Affiliate />} />
-          <Route path="/affiliate-account" element={<AccountSoon kind="affiliate" />} />
-          <Route path="/my-account" element={<AccountSoon kind="customer" />} />
+          <Route path="/affiliate-account" element={<AffiliateAccount />} />
+          <Route path="/affiliate-account/set-password" element={<AffiliateSetPassword />} />
+          <Route path="/my-account" element={<MyAccount />} />
+          <Route path="/track-order" element={<TrackOrder />} />
+          <Route path="/cart/recover/:token" element={<CartRecover />} />
+          <Route path="/cart/unsubscribe/:token" element={<CartUnsubscribe />} />
           {["shipping-policy", "return-refund", "terms-conditions", "privacy-policy"].map((slug) => (
             <Route key={slug} path={`/${slug}`} element={<Policy slug={slug} />} />
           ))}

@@ -3,12 +3,21 @@ import type { CreateExpressContextOptions } from "@trpc/server/adapters/express"
 import superjson from "superjson";
 import { ZodError, z } from "zod";
 import { withTimeout } from "./db";
+import { COOKIE, parseCookies, readSession } from "./lib/auth";
 
-export function createContext({ req }: CreateExpressContextOptions) {
+export function createContext({ req, res }: CreateExpressContextOptions) {
   const proto = (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0] ?? req.protocol;
   const host = (req.headers["x-forwarded-host"] as string | undefined) ?? req.headers.host;
   const baseUrl = (process.env.PUBLIC_URL || `${proto}://${host}`).replace(/\/$/, "");
-  return { ip: req.ip ?? "unknown", baseUrl };
+  const cookies = parseCookies(req);
+  return {
+    req,
+    res,
+    ip: req.ip ?? "unknown",
+    baseUrl,
+    adminId: readSession(cookies[COOKIE.admin], "admin"),
+    affiliateId: readSession(cookies[COOKIE.affiliate], "affiliate"),
+  };
 }
 type Context = ReturnType<typeof createContext>;
 
@@ -40,6 +49,16 @@ const timeoutGuard = t.middleware(async ({ next, path }) => {
 export const publicProcedure = t.procedure.use(timeoutGuard);
 /** Sin límite de 10 s: solo para operaciones que esperan a un tercero (crear pago en Bankful). */
 export const externalProcedure = t.procedure;
+
+export const adminProcedure = publicProcedure.use(({ ctx, next }) => {
+  if (!ctx.adminId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Please sign in to the admin." });
+  return next({ ctx: { ...ctx, adminId: ctx.adminId } });
+});
+
+export const affiliateProcedure = publicProcedure.use(({ ctx, next }) => {
+  if (!ctx.affiliateId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Please sign in to your affiliate account." });
+  return next({ ctx: { ...ctx, affiliateId: ctx.affiliateId } });
+});
 
 /** Límite simple en memoria por IP y acción. */
 const hits = new Map<string, number[]>();

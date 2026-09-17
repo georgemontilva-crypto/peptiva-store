@@ -14,23 +14,37 @@ type CartState = {
   remove: (productId: number, variantId: number | null) => void;
   setCoupon: (code: string | null) => void;
   clear: () => void;
+  /** Reemplaza el carrito (recuperación desde el email de carrito abandonado). */
+  replace: (items: CartItem[], couponCode: string | null) => void;
+  /** Identificador del carrito para los recordatorios; cambia después de cada compra. */
+  token: string;
 };
 
 const CartContext = createContext<CartState | null>(null);
 const STORAGE_KEY = "peptiva.cart.v1";
 const same = (a: CartItem, productId: number, variantId: number | null) => a.productId === productId && a.variantId === variantId;
 
-function load(): { items: CartItem[]; couponCode: string | null } {
+const newToken = () => {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+};
+
+function load(): { items: CartItem[]; couponCode: string | null; token: string } {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as { items?: CartItem[]; couponCode?: string | null };
-      return { items: Array.isArray(parsed.items) ? parsed.items : [], couponCode: parsed.couponCode ?? null };
+      const parsed = JSON.parse(raw) as { items?: CartItem[]; couponCode?: string | null; token?: string };
+      return {
+        items: Array.isArray(parsed.items) ? parsed.items : [],
+        couponCode: parsed.couponCode ?? null,
+        token: typeof parsed.token === "string" && parsed.token.length >= 16 ? parsed.token : newToken(),
+      };
     }
   } catch {
     /* almacenamiento no disponible */
   }
-  return { items: [], couponCode: null };
+  return { items: [], couponCode: null, token: newToken() };
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -79,7 +93,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setQuantity,
       remove,
       setCoupon: (couponCode) => setState((s) => ({ ...s, couponCode })),
-      clear: () => setState({ items: [], couponCode: null }),
+      clear: () => setState({ items: [], couponCode: null, token: newToken() }),
+      replace: (items, couponCode) => setState((s) => ({ ...s, items, couponCode })),
+      token: state.token,
     }),
     [state, isOpen, add, setQuantity, remove],
   );
