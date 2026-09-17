@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useQuote } from "../lib/useQuote";
 import { formatPrice } from "../lib/format";
@@ -26,18 +26,32 @@ export default function CartDrawer() {
     };
   }, [cart.isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!cart.isOpen) return null;
+  // Se mantiene montado mientras dura la animación de cierre
+  const [mounted, setMounted] = useState(false);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (cart.isOpen) {
+      setMounted(true);
+      const raf = requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));
+      return () => cancelAnimationFrame(raf);
+    }
+    setShown(false);
+    const t = window.setTimeout(() => setMounted(false), 400);
+    return () => window.clearTimeout(t);
+  }, [cart.isOpen]);
+
+  if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
-      <button type="button" aria-label="Close cart" className="absolute inset-0 bg-navy-deep/40" onClick={cart.close} />
+    <div className={`fixed inset-0 z-50 ${shown ? "drawer-open" : ""}`} aria-hidden={!cart.isOpen}>
+      <button type="button" aria-label="Close cart" className="drawer-backdrop absolute inset-0 bg-navy-deep/45 backdrop-blur-[2px]" onClick={cart.close} tabIndex={cart.isOpen ? 0 : -1} />
       <div
         ref={panelRef}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl outline-none"
+        className="drawer-panel absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl outline-none"
       >
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <h2 className="text-lg font-medium">Your cart</h2>
@@ -56,8 +70,8 @@ export default function CartDrawer() {
           <>
             <ul className="flex-1 divide-y divide-line overflow-y-auto px-6">
               {isLoading && !quote ? <li className="py-6 text-sm text-slate">Updating prices…</li> : null}
-              {quote?.lines.map((l) => (
-                <li key={`${l.productId}-${l.variantId}`} className="flex gap-4 py-5">
+              {quote?.lines.map((l, i) => (
+                <li key={`${l.productId}-${l.variantId}`} className="drawer-item flex gap-4 py-5" style={{ animationDelay: `${120 + i * 60}ms` }}>
                   <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-white ring-1 ring-line">
                     {l.imageUrl ? <img src={l.imageUrl} alt="" className="h-full w-full rounded-2xl object-cover" /> : null}
                   </div>

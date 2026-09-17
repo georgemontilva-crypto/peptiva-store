@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { trpc } from "../lib/trpc";
+import MoleculeField from "../components/MoleculeField";
 import { usePageMeta } from "../lib/format";
 import LoadError from "../components/LoadError";
 
@@ -35,11 +36,12 @@ export default function Coas() {
   return (
     <>
       <section className="relative overflow-hidden bg-navy-deep text-white">
+        <MoleculeField tone="dark" density={0.8} />
         <div className="lab-grid absolute inset-0 opacity-[0.35] [filter:invert(1)] [mask-image:linear-gradient(to_left,black,transparent_70%)]" aria-hidden />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-20 lg:grid-cols-[1.25fr_1fr]">
           <div>
           <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-white">
-            <span className="h-2 w-2 rounded-full bg-teal" aria-hidden />
+            <span className="lab-pulse h-2 w-2 rounded-full bg-teal" aria-hidden />
             Independent laboratory testing
           </p>
           <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-6xl">Lab results for every compound we sell.</h1>
@@ -63,7 +65,7 @@ export default function Coas() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-16">
+      <section className="mx-auto max-w-6xl px-5 py-16" data-reveal>
         <h2 className="text-2xl font-bold">What each certificate confirms</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {CHECKS.map((c) => (
@@ -167,7 +169,7 @@ function CertificateIllustration() {
         <div className="mt-5 rounded-2xl bg-mist p-4">
           <svg viewBox="0 0 280 110" className="h-28 w-full">
             <path d="M0 100h280" stroke="#cfd6e0" />
-            <path d="M0 98 C40 98 60 96 80 95 S110 92 118 60 S126 8 132 8 S140 70 148 92 S200 97 280 98" fill="none" stroke="#0fb0b3" strokeWidth="2.5" />
+            <path className="chromatogram" pathLength={1} d="M0 98 C40 98 60 96 80 95 S110 92 118 60 S126 8 132 8 S140 70 148 92 S200 97 280 98" fill="none" stroke="#0fb0b3" strokeWidth="2.5" />
             <path d="M0 98 C40 98 60 96 80 95 S110 92 118 60 S126 8 132 8 S140 70 148 92 S200 97 280 98 V100 H0z" fill="#0fb0b3" opacity="0.12" />
             <path d="M190 98 C194 98 196 90 199 90 S204 98 208 98" fill="none" stroke="#15426e" strokeWidth="1.5" />
           </svg>

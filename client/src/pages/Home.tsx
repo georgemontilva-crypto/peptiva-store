@@ -4,6 +4,7 @@ import { usePageMeta } from "../lib/format";
 import { HERO_VIALS } from "../lib/site";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import NewsletterForm from "../components/NewsletterForm";
+import MoleculeField from "../components/MoleculeField";
 
 const SEALS = ["≥99% HPLC purity", "Mass spec verified", "Third-party tested", "COA for every product", "Lyophilized & sealed", "Ships same or next day", "Cold-pack packaging", "U.S. based support"];
 
@@ -16,11 +17,12 @@ export default function Home() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-mist">
+        <MoleculeField tone="light" density={0.9} className="[mask-image:linear-gradient(to_right,rgba(0,0,0,.25)_0%,rgba(0,0,0,.25)_35%,black_60%)]" />
         <div className="lab-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_70%_50%,black,transparent_70%)]" aria-hidden />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-16 md:grid-cols-[1fr_1.05fr] md:pb-28 md:pt-24">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-navy">
-              <span className="h-2 w-2 rounded-full bg-teal" aria-hidden />
+              <span className="lab-pulse h-2 w-2 rounded-full bg-teal" aria-hidden />
               Every lot tested by an independent lab
             </p>
             <h1 className="mt-6 text-[2.6rem] font-bold leading-[1.05] tracking-tight sm:text-6xl">
@@ -64,7 +66,7 @@ export default function Home() {
       </section>
 
       {/* Garantía */}
-      <section className="mx-auto max-w-6xl px-5 py-24">
+      <section className="mx-auto max-w-6xl px-5 py-24" data-reveal>
         <div className="grid gap-10 md:grid-cols-[1fr_1.3fr] md:items-center">
           <div>
             <h2 className="text-3xl font-bold leading-tight sm:text-4xl">The 99% purity guarantee</h2>
@@ -90,7 +92,7 @@ export default function Home() {
       </section>
 
       {/* Destacados */}
-      <section className="mx-auto max-w-6xl px-5">
+      <section className="mx-auto max-w-6xl px-5" data-reveal>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold">Most requested</h2>
@@ -104,7 +106,7 @@ export default function Home() {
       </section>
 
       {/* Para investigadores */}
-      <section className="mx-auto mt-28 max-w-6xl px-5">
+      <section className="mx-auto mt-28 max-w-6xl px-5" data-reveal>
         <div className="grid overflow-hidden rounded-[2rem] bg-navy-deep text-white md:grid-cols-2">
           <div className="p-10 sm:p-14">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">Built for researchers</h2>
@@ -134,7 +136,7 @@ export default function Home() {
       </section>
 
       {/* CTA + newsletter */}
-      <section className="mx-auto mt-28 max-w-6xl px-5">
+      <section className="mx-auto mt-28 max-w-6xl px-5" data-reveal>
         <div className="flex flex-col items-start justify-between gap-8 border-y border-line py-14 md:flex-row md:items-center">
           <div className="max-w-lg">
             <h2 className="text-3xl font-bold">Hear about restocks first</h2>

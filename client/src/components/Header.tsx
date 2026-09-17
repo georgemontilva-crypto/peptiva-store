@@ -62,7 +62,7 @@ export default function Header() {
         </div>
 
         {menuOpen ? (
-          <nav id="mobile-menu" aria-label="Mobile" className="max-h-[calc(100vh-6rem)] overflow-y-auto border-t border-line px-5 pb-6 lg:hidden">
+          <nav id="mobile-menu" aria-label="Mobile" className="mobile-menu-enter max-h-[calc(100vh-6rem)] overflow-y-auto border-t border-line px-5 pb-6 lg:hidden">
             {MAIN_NAV.map((item) =>
               item.children ? (
                 <div key={item.label} className="border-b border-line py-3">
@@ -156,6 +156,7 @@ function Dropdown({ item }: { item: NavItem }) {
       </button>
       {open ? (
         <div id={id} className="absolute left-1/2 top-full z-50 w-72 -translate-x-1/2 pt-2">
+          <div className="menu-pop">
           <ul className="rounded-2xl border border-line bg-white p-2 shadow-[0_24px_48px_-20px_rgba(11,39,66,0.35)]">
             {item.children!.map((c) => (
               <li key={c.to}>
@@ -166,6 +167,7 @@ function Dropdown({ item }: { item: NavItem }) {
               </li>
             ))}
           </ul>
+          </div>
         </div>
       ) : null}
     </div>

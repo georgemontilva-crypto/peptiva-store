@@ -164,11 +164,9 @@ export default function Product() {
 
       {primaryLot ? (
         <div className="mt-20">
-          <VerifiedResults lot={primaryLot} />
+          <VerifiedResults lot={primaryLot} lots={product.coas} />
         </div>
-      ) : null}
-
-      {product.coas.some((l) => l.reportUrl) ? (
+      ) : product.coas.some((l) => l.reportUrl) ? (
         <div className="mt-20">
           <LotGrid lots={product.coas.filter((l) => l.reportUrl)} />
         </div>

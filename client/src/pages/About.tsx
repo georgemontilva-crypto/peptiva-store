@@ -28,7 +28,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-24 md:grid-cols-[1fr_1.6fr]">
+      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-24 md:grid-cols-[1fr_1.6fr]" data-reveal>
         <h2 className="text-3xl font-bold">Our mission</h2>
         <div className="space-y-5 text-lg leading-relaxed text-slate">
           <p>We take quality seriously, applying disciplined processes and clear standards to support confident, responsible research.</p>
@@ -40,7 +40,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5">
+      <section className="mx-auto max-w-6xl px-5" data-reveal>
         <h2 className="text-3xl font-bold">Our standards</h2>
         <div className="mt-10 grid gap-px overflow-hidden rounded-3xl bg-line sm:grid-cols-2">
           {STANDARDS.map((s) => (
@@ -52,7 +52,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="mx-auto mt-24 max-w-6xl px-5">
+      <section className="mx-auto mt-24 max-w-6xl px-5" data-reveal>
         <div className="flex flex-col items-start justify-between gap-6 rounded-[2rem] bg-navy-deep p-10 text-white sm:flex-row sm:items-center sm:p-14">
           <div>
             <h2 className="text-3xl font-bold text-white">See the full catalog</h2>

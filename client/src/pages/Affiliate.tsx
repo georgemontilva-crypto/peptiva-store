@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { trpc } from "../lib/trpc";
+import MoleculeField from "../components/MoleculeField";
 import { usePageMeta } from "../lib/format";
 
 const TERMS = [
@@ -33,10 +34,11 @@ export default function Affiliate() {
   return (
     <>
       <section className="relative overflow-hidden bg-navy-deep text-white">
+        <MoleculeField tone="dark" density={0.8} />
         <div className="lab-grid absolute inset-0 opacity-[0.35] [filter:invert(1)] [mask-image:linear-gradient(to_left,black,transparent_70%)]" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-5 py-20">
           <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-white">
-            <span className="h-2 w-2 rounded-full bg-teal" aria-hidden />
+            <span className="lab-pulse h-2 w-2 rounded-full bg-teal" aria-hidden />
             Affiliate Program
           </p>
           <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-6xl">Become a Peptiva affiliate.</h1>
@@ -58,7 +60,7 @@ export default function Affiliate() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section className="mx-auto max-w-6xl px-5 py-20" data-reveal>
         <h2 className="text-3xl font-bold">How it works</h2>
         <ol className="mt-10 grid gap-4 md:grid-cols-3">
           {STEPS.map((s, i) => (
@@ -71,7 +73,7 @@ export default function Affiliate() {
         </ol>
       </section>
 
-      <section id="apply" className="mx-auto max-w-6xl scroll-mt-32 px-5">
+      <section id="apply" className="mx-auto max-w-6xl scroll-mt-32 px-5" data-reveal>
         <div className="grid gap-12 rounded-[2rem] bg-mist p-8 sm:p-12 md:grid-cols-[1fr_1.3fr]">
           <div>
             <h2 className="text-3xl font-bold">Apply to join</h2>

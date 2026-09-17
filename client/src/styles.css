@@ -78,3 +78,49 @@ img { border-radius: 1rem; }
 /* Esqueletos de carga */
 @keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
 .skeleton { background: linear-gradient(90deg, #eef2f6 0, #f7f9fb 40%, #eef2f6 80%); background-size: 800px 100%; animation: shimmer 1.4s linear infinite; }
+
+/* ===== Movimiento ===== */
+
+/* Aparición al hacer scroll (solo si el gestor de JS está activo) */
+.js-reveal [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .75s ease, transform .75s cubic-bezier(.2,.7,.2,1); }
+.js-reveal [data-reveal].is-visible { opacity: 1; transform: none; }
+
+/* Entrada de cada página */
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.page-enter { animation: page-in .45s cubic-bezier(.2,.7,.2,1) both; }
+
+/* Desplegables del menú y menú móvil */
+@keyframes pop-in { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+.menu-pop { animation: pop-in .18s ease-out both; transform-origin: top center; }
+@keyframes slide-down { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.mobile-menu-enter { animation: slide-down .25s ease-out both; }
+.mobile-menu-enter > * { animation: slide-down .35s ease-out both; }
+.mobile-menu-enter > *:nth-child(2) { animation-delay: 30ms; } .mobile-menu-enter > *:nth-child(3) { animation-delay: 60ms; }
+.mobile-menu-enter > *:nth-child(4) { animation-delay: 90ms; } .mobile-menu-enter > *:nth-child(5) { animation-delay: 120ms; }
+.mobile-menu-enter > *:nth-child(6) { animation-delay: 150ms; }
+
+/* Carrito: fondo que se funde y panel que se desliza */
+.drawer-backdrop { opacity: 0; transition: opacity .3s ease; }
+.drawer-panel { transform: translateX(100%); transition: transform .38s cubic-bezier(.22,.8,.26,1); }
+.drawer-open .drawer-backdrop { opacity: 1; }
+.drawer-open .drawer-panel { transform: none; }
+@keyframes item-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.drawer-open .drawer-item { animation: item-in .4s ease-out both; }
+
+/* Línea de escaneo del certificado */
+@keyframes scan { 0% { transform: translateY(-100%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(420%); opacity: 0; } }
+.scan-line { background: linear-gradient(to bottom, transparent, rgb(79 199 201 / .22) 60%, rgb(79 199 201 / .5) 62%, transparent 64%); animation: scan 4.5s ease-in-out infinite; }
+
+/* Pulso de "en análisis" */
+@keyframes lab-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(15 176 179 / .45); } 50% { box-shadow: 0 0 0 7px rgb(15 176 179 / 0); } }
+.lab-pulse { animation: lab-pulse 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal [data-reveal] { opacity: 1; transform: none; }
+  .drawer-panel, .drawer-backdrop { transition: none; }
+}
+
+/* Cromatograma que se dibuja en bucle */
+@keyframes draw-line { 0% { stroke-dashoffset: 1; } 55%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
+.chromatogram { stroke-dasharray: 1; animation: draw-line 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .chromatogram { stroke-dasharray: none; } }

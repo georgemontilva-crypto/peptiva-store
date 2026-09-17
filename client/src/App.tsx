@@ -23,6 +23,7 @@ import TrackOrder from "./pages/TrackOrder";
 import CartRecover from "./pages/CartRecover";
 import CartUnsubscribe from "./pages/CartUnsubscribe";
 import AffiliateTracker from "./components/AffiliateTracker";
+import RevealManager from "./components/RevealManager";
 import AdminApp from "./admin/AdminApp";
 import NotFound from "./pages/NotFound";
 
@@ -42,12 +43,14 @@ export default function App() {
   return (
     <div className="flex min-h-screen flex-col">
       <AffiliateTracker />
+      <RevealManager />
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-white focus:px-3 focus:py-2">
         Skip to content
       </a>
       <Header />
       <main id="main" className="flex-1">
         <ErrorBoundary resetKey={pathname}>
+        <div key={pathname} className="page-enter">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
@@ -70,6 +73,7 @@ export default function App() {
           ))}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </div>
         </ErrorBoundary>
       </main>
       <Footer />
