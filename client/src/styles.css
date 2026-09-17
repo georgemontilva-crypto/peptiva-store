@@ -2,34 +2,66 @@
 
 @theme {
   --color-navy: #15426e;
-  --color-navy-deep: #0e2f50;
+  --color-navy-deep: #0c2a47;
   --color-teal: #0fb0b3;
-  --color-teal-soft: #4fc7c9;
-  --color-ink: #2b3340;
+  --color-teal-soft: #d8f3f3;
+  --color-ink: #1f2733;
   --color-slate: #5d6675;
-  --color-muted: #98a0ad;
-  --color-mist: #f4f6f9;
+  --color-muted: #8e97a5;
+  --color-mist: #f2f5f9;
+  --color-line: #e2e7ee;
+  --color-alert: #b42318;
   --font-display: "Rubik", system-ui, sans-serif;
   --font-sans: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-html { color: var(--color-ink); background: #fff; }
+html { color: var(--color-ink); background: #fff; scroll-behavior: smooth; }
 body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
-h1, h2, h3, h4 { font-family: var(--font-display); color: var(--color-navy); }
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--color-navy); text-wrap: balance; }
+p { text-wrap: pretty; }
 :focus-visible { outline: 2px solid var(--color-teal); outline-offset: 2px; }
 
-/* Descripción larga migrada de WooCommerce */
-.product-copy { max-width: 68ch; line-height: 1.7; color: var(--color-slate); }
-.product-copy h2 { font-size: 1.375rem; font-weight: 500; margin: 2.25rem 0 0.75rem; }
-.product-copy h3 { font-size: 1.125rem; font-weight: 500; margin: 1.75rem 0 0.5rem; }
-.product-copy p { margin: 0 0 1rem; }
-.product-copy ul, .product-copy ol { margin: 0 0 1rem 1.25rem; list-style: disc; }
-.product-copy li { margin: 0.25rem 0; }
-.product-copy a { color: var(--color-navy); text-decoration: underline; text-underline-offset: 3px; }
-.product-copy strong { color: var(--color-ink); }
-.product-copy table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.925rem; }
-.product-copy th, .product-copy td { border-bottom: 1px solid #e3e7ee; padding: 0.5rem 0.25rem; text-align: left; }
+/* Botones */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.6rem; font-weight: 600; font-size: .95rem; transition: background-color .15s, color .15s, border-color .15s; }
+.btn-primary { background: var(--color-navy); color: #fff; }
+.btn-primary:hover { background: var(--color-navy-deep); }
+.btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+.btn-ghost { border: 1.5px solid var(--color-navy); color: var(--color-navy); }
+.btn-ghost:hover { background: var(--color-navy); color: #fff; }
+
+/* Campos */
+.field { display: block; width: 100%; border: 1px solid #cfd6e0; border-radius: .75rem; padding: .7rem .9rem; font-size: .95rem; background: #fff; color: var(--color-ink); }
+.field:focus { outline: none; border-color: var(--color-teal); box-shadow: 0 0 0 3px rgb(15 176 179 / .18); }
+.label { display: block; font-size: .85rem; font-weight: 600; color: var(--color-ink); margin-bottom: .35rem; }
+
+/* Texto largo migrado (fichas y políticas) */
+.prose-copy { max-width: 70ch; line-height: 1.75; color: var(--color-slate); }
+.prose-copy h2 { font-size: 1.35rem; font-weight: 500; margin: 2.25rem 0 .75rem; }
+.prose-copy h3 { font-size: 1.1rem; font-weight: 500; margin: 1.75rem 0 .5rem; }
+.prose-copy p { margin: 0 0 1rem; }
+.prose-copy > :first-child { margin-top: 0; }
+.prose-copy ul, .prose-copy ol { margin: 0 0 1rem 1.25rem; list-style: disc; }
+.prose-copy li { margin: .3rem 0; }
+.prose-copy a { color: var(--color-navy); text-decoration: underline; text-underline-offset: 3px; }
+.prose-copy strong { color: var(--color-ink); }
+.prose-copy table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .925rem; }
+.prose-copy th, .prose-copy td { border-bottom: 1px solid var(--color-line); padding: .5rem .25rem; text-align: left; }
+
+/* Hero: frascos flotando */
+@keyframes vial-float { 0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); } 50% { transform: translateY(-14px) rotate(var(--tilt, 0deg)); } }
+@keyframes vial-shadow { 0%, 100% { transform: scaleX(1); opacity: .35; } 50% { transform: scaleX(.8); opacity: .2; } }
+.vial { animation: vial-float 6s ease-in-out infinite; }
+.vial-shadow { animation: vial-shadow 6s ease-in-out infinite; }
+
+/* Cinta de sellos */
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-track { animation: ticker 38s linear infinite; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+
+/* Fondo de retícula de laboratorio */
+.lab-grid { background-image: linear-gradient(rgb(21 66 110 / .06) 1px, transparent 1px), linear-gradient(90deg, rgb(21 66 110 / .06) 1px, transparent 1px); background-size: 44px 44px; }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

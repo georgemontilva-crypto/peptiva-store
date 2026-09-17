@@ -3,6 +3,8 @@ import fs from "node:fs";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
+import { createContext } from "./trpc";
+import { handleBankfulCallback } from "./lib/bankful-callback";
 import { runMigrations } from "./db/migrate";
 import { seedIfEmpty } from "./db/seed";
 
@@ -14,12 +16,40 @@ app.get("/healthz", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.use("/trpc", createExpressMiddleware({ router: appRouter }));
+app.use("/trpc", createExpressMiddleware({ router: appRouter, createContext }));
+
+// Bankful: misma ruta que usaba WooCommerce, para no cambiar nada en su panel
+const bankfulBody = [express.urlencoded({ extended: false, limit: "100kb" }), express.json({ limit: "100kb" })];
+const bankful = (req: express.Request, res: express.Response) => {
+  handleBankfulCallback(req, res).catch((err) => {
+    console.error("[bankful] error procesando callback", err);
+    res.status(500).send("ERROR");
+  });
+};
+app.get("/wc-api/bankful_callback", bankful);
+app.post("/wc-api/bankful_callback", ...bankfulBody, bankful);
 
 // URLs antiguas de WooCommerce → rutas nuevas (301, para conservar SEO)
 app.get("/product-category/:slug", (req, res) => {
   res.redirect(301, `/shop?category=${encodeURIComponent(req.params.slug)}`);
 });
+const legacyRedirects: Record<string, string> = {
+  "/privacy-policy-2": "/privacy-policy",
+  "/checkout-page": "/checkout",
+  "/cart": "/checkout",
+  "/product-page": "/shop",
+};
+for (const [from, to] of Object.entries(legacyRedirects)) {
+  app.get(from, (_req, res) => {
+    res.redirect(301, to);
+  });
+}
+// Cuentas de cliente llegan en una fase posterior: redirect temporal
+for (const from of ["/my-account", "/login", "/register"]) {
+  app.get(from, (_req, res) => {
+    res.redirect(302, "/");
+  });
+}
 app.get("/all-shop", (_req, res) => {
   res.redirect(301, "/shop");
 });

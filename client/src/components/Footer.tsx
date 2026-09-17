@@ -1,34 +1,45 @@
 import { Link } from "react-router-dom";
+import { MAIN_NAV, POLICY_LINKS, SUPPORT_EMAIL } from "../lib/site";
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
-    <footer className="mt-24 bg-navy-deep text-white/75">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-[2fr_1fr_1fr]">
+    <footer className="mt-28 bg-navy-deep text-white/70">
+      <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div>
-          <p className="font-display text-lg font-bold text-white">Peptiva Supplies</p>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed">
-            All products are sold strictly for in-vitro laboratory research. They are not drugs, foods or cosmetics and
-            must not be used on humans or animals.
+          <Logo inverted />
+          <p className="mt-4 max-w-xs text-sm leading-relaxed">
+            Research peptides with third-party purity testing, shipped from the United States.
           </p>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-5 inline-block text-sm font-semibold text-white hover:text-teal">
+            {SUPPORT_EMAIL}
+          </a>
         </div>
-        <div className="text-sm">
-          <p className="mb-3 font-semibold text-white">Shop</p>
-          <ul className="space-y-2">
-            <li><Link to="/shop" className="hover:text-white">All products</Link></li>
-            <li><Link to="/shop?category=research-peptides" className="hover:text-white">Research peptides</Link></li>
-            <li><Link to="/shop?category=bundle-save" className="hover:text-white">Bundle & save</Link></li>
-          </ul>
-        </div>
-        <div className="text-sm">
-          <p className="mb-3 font-semibold text-white">Support</p>
-          <ul className="space-y-2">
-            <li><a href="mailto:support@peptivasupplies.com" className="hover:text-white">support@peptivasupplies.com</a></li>
-          </ul>
-        </div>
+        <FooterColumn title="Store" links={[{ to: "/shop", label: "All products" }, { to: "/shop?category=bundle-save", label: "Bundle & save" }, { to: "/coas", label: "Lab results" }]} />
+        <FooterColumn title="Company" links={MAIN_NAV.filter((n) => ["/about-us", "/faq", "/contact"].includes(n.to))} />
+        <FooterColumn title="Policies" links={POLICY_LINKS} />
       </div>
-      <p className="border-t border-white/10 px-5 py-5 text-center text-xs text-white/50">
-        © {new Date().getFullYear()} Peptiva Supplies
-      </p>
+      <div className="border-t border-white/10">
+        <p className="mx-auto max-w-6xl px-5 py-6 text-xs leading-relaxed text-white/45">
+          © {new Date().getFullYear()} Peptiva Supplies. All products are sold strictly for in-vitro laboratory research. They are not
+          drugs, foods, supplements or cosmetics, have not been evaluated by the FDA, and must not be used on humans or animals.
+        </p>
+      </div>
     </footer>
+  );
+}
+
+function FooterColumn({ title, links }: { title: string; links: { to: string; label: string }[] }) {
+  return (
+    <div className="text-sm">
+      <p className="mb-4 font-display font-medium text-white">{title}</p>
+      <ul className="space-y-2.5">
+        {links.map((l) => (
+          <li key={l.to}>
+            <Link to={l.to} className="hover:text-white">{l.label}</Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

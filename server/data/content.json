@@ -1,0 +1,162 @@
+{
+  "pages": {
+    "shipping-policy": {
+      "title": "Shipping Policy",
+      "html": "<p>At Peptiva, we strive to ensure your order is processed quickly and delivered reliably.</p>\n<h2>Order Processing</h2>\n<p>All orders are shipped the same or next day, excluding Sundays and public holidays. Once your order ships, you will receive a confirmation email with tracking details.</p>\n<h2>Shipping Options &amp; Estimated Delivery</h2>\n<p>We offer both Standard and Expedited shipping options at checkout.</p>\n<p>Estimated Delivery Times:</p>\n<ul>\n<li>Domestic Shipping: 2-4 business days (after dispatch)</li>\n</ul>\n<h2>Shipping Rates</h2>\n<p>Shipping costs are calculated at checkout based on your location and the selected shipping method.</p>\n<h2>Shipping Delays</h2>\n<p>Please note, Peptiva Supplies is not responsible for delays caused by:</p>\n<ul>\n<li>Customs inspections</li>\n<li>Courier issues or disruptions</li>\n<li>Weather or natural disasters</li>\n</ul>\n<p>Once an order has been shipped, responsibility for delivery lies with the carrier.</p>"
+    },
+    "return-refund": {
+      "title": "Return & Refund Policy",
+      "html": "<p>At Peptiva, the integrity, safety, and purity of our products are our top priorities. Every product we ship is verified to exceed 99% purity, and we stand behind that commitment. As all of our compounds are intended strictly for research use only and are highly sensitive in nature, we maintain a limited return and refund policy.</p>\n<h2>99% Purity Money-Back Guarantee</h2>\n<p>We are confident in the quality of every product we sell. If you obtain a valid, third-party Certificate of Analysis (COA) test on any Peptiva Supplies product and the results show purity below 99%, we will issue a full refund for that product.</p>\n<p>To submit a purity claim:</p>\n<ul>\n<li>Email us at <a href=\"mailto:support@peptivasupplies.com\">support@peptivasupplies.com</a> within 30 days of delivery.</li>\n<li>Include a copy of the third-party COA test results clearly showing the product name, batch or lot number, and purity reading below 99%.</li>\n<li>Our team will review the submitted documentation and respond within 3–5 business days.</li>\n</ul>\n<h2>General Return &amp; Refund Policy</h2>\n<p>Outside of our Purity Guarantee, all sales are final. We do not offer refunds or accept returns for ordering errors, change of mind, or misuse. This policy helps us maintain quality control and ensures that all customers receive products that meet our rigorous standards.</p>\n<p>If your order arrives damaged, defective, or you receive the wrong item, you must notify us within 48 hours of delivery at <a href=\"mailto:support@peptivasupplies.com\">support@peptivasupplies.com</a>. Please include a detailed description and clear photos of the issue. Our support team will review your case and determine eligibility for a replacement.</p>\n<p>Refunds will only be considered in rare cases where:</p>\n<ul>\n<li>The product fails to meet 99% purity as verified by a valid third-party COA test.</li>\n<li>The order was never delivered due to an error on our part.</li>\n<li>A replacement is not possible and the issue was reported within the required timeframe.</li>\n</ul>\n<p>We do not refund or replace items that have been opened, used, or returned without prior authorization (with the exception of products submitted for third-party purity testing under our Purity Guarantee).</p>"
+    },
+    "terms-conditions": {
+      "title": "Terms & Conditions",
+      "html": "<p>By accessing or using our website and purchasing our products, you agree to comply with and be bound by the following Terms &amp; Conditions. If you do not accept these terms, please refrain from using our website.</p>\n<h2>Eligibility for Use</h2>\n<p>You must be at least 18 years old to browse or purchase from Peptiva. By using this website, you confirm that you meet the legal age requirement and have the authority to enter into a binding agreement.</p>\n<h2>Research Use Only Products</h2>\n<p>All products available on Peptiva are designated exclusively for laboratory research use. Research Use Only.</p>\n<p>By placing an order with Peptiva, you acknowledge and agree that:</p>\n<ul>\n<li>You are a qualified researcher or acting on behalf of a legitimate research institution.</li>\n<li>You fully understand the risks involved in handling research compounds.</li>\n<li>You will use these materials exclusively in controlled research environments for authorized research purposes.</li>\n</ul>\n<h2>Limitation of Liability</h2>\n<p>Peptiva is not liable for any damages, injuries, or losses arising from the misuse or mishandling of our products. All responsibility lies with the buyer upon receipt and use of the product.</p>\n<h2>Order Acceptance &amp; Cancellations</h2>\n<p>We reserve the right to refuse or cancel any order at our sole discretion. Orders may be declined if misuse is suspected, shipping restrictions apply, or incorrect information is provided.</p>\n<h2>Pricing &amp; Payment</h2>\n<p>All prices are listed in U.S. dollars (USD) and are subject to change without prior notice. Payments are securely processed via trusted third-party gateways. Peptiva does not store any payment or card details.</p>\n<h2>Shipping &amp; Delivery</h2>\n<p>We aim to ship all orders the same or next business day. Shipping rates and estimated delivery times are outlined in our Shipping &amp; Returns Policy. Peptiva is not responsible for delays caused by customs, carrier issues, or force majeure.</p>"
+    },
+    "privacy-policy": {
+      "title": "Privacy Policy",
+      "html": "<p>At Peptiva, your privacy is our priority. This Privacy Policy explains how we collect, use, and protect your personal information when you interact with our website or purchase research products from us.</p>\n<h2>Information We Collect</h2>\n<p>When you visit or place an order on our website, we may collect the following information:</p>\n<ul>\n<li>Personal Information: Name, email address, phone number, billing and shipping addresses.</li>\n<li>Payment Details: Processed securely via third-party gateways. We do not store your payment information.</li>\n<li>Technical Data: IP address, device type, browser, and activity on our site—collected through cookies and similar technologies.</li>\n</ul>\n<h2>How We Use Your Information</h2>\n<p>We use the data we collect to:</p>\n<ul>\n<li>Process and deliver your orders efficiently</li>\n<li>Provide order confirmations, updates, and customer support</li>\n<li>Send promotional emails only if you opt in</li>\n<li>Improve our website performance and user experience</li>\n<li>Monitor for fraud and ensure site security</li>\n</ul>\n<h2>Information Sharing</h2>\n<p>We never sell or rent your personal data. However, we may share necessary information with:</p>\n<ul>\n<li>Trusted third-party partners for payment processing, shipping, analytics, and email communication</li>\n<li>Regulatory or legal authorities if required by law or to protect our rights and safety</li>\n</ul>\n<h2>Cookies &amp; Tracking</h2>\n<p>We use cookies to personalize your experience, analyze traffic, and improve functionality. You may disable cookies through your browser settings, though some features may not work as intended.</p>\n<h2>Data Security</h2>\n<p>Peptiva implements strong technical and organizational safeguards to protect your information from unauthorized access, loss, or misuse.</p>"
+    }
+  },
+  "faq": [
+    {
+      "section": "General",
+      "q": "What are Peptides?",
+      "a": "<p>Peptides are short chains of amino acids linked by peptide bonds. They are smaller than proteins and serve as important research tools for studying biological processes, protein interactions, and cellular mechanisms. These materials are designated for Research Use Only and are typically used in preclinical experiments, academic studies, or product development testing.</p>"
+    },
+    {
+      "section": "General",
+      "q": "Who can purchase from Peptiva?",
+      "a": "<p>Our products are available to research institutions, academic laboratories, and authorized professionals. All purchases are subject to verification of research or professional credentials.</p>"
+    },
+    {
+      "section": "General",
+      "q": "Are your Peptides intended for human use?",
+      "a": "<p>No. All Peptiva products are designated exclusively for laboratory research purposes. They are intended for use by qualified professionals in controlled research environments. Research Use Only.</p>"
+    },
+    {
+      "section": "Quality & Purity",
+      "q": "What purity levels do you guarantee?",
+      "a": "<p>All our peptides are manufactured to a minimum purity of 99%. Each product is tested using HPLC and Mass Spectrometry, with results documented in the Certificate of Analysis.</p>"
+    },
+    {
+      "section": "Quality & Purity",
+      "q": "Are your Peptides third-party tested?",
+      "a": "<p>Yes. We use independent laboratories to verify our quality claims, ensuring unbiased confirmation of purity and identity for complete transparency.</p>"
+    },
+    {
+      "section": "Shipping & Storage",
+      "q": "How do you ship temperature-sensitive Peptides?",
+      "a": "<p>We use appropriate cold packs and insulated packaging for temperature-sensitive products. This cold chain approach ensures stability from our facility to your laboratory.</p>"
+    },
+    {
+      "section": "Shipping & Storage",
+      "q": "How long does shipping take?",
+      "a": "<p>Standard shipping typically takes 2-4 business days within the U.S.</p>"
+    },
+    {
+      "section": "Shipping & Storage",
+      "q": "How should I store my Peptides?",
+      "a": "<p>Most peptide products should be stored at -20°C for long-term stability prior to laboratory use. Once reconstituted for assay preparation, samples should be stored at 4°C and used within the timeframe specified in the accompanying Certificate of Analysis to preserve sample integrity for research purposes. Always protect from light and moisture.</p>"
+    },
+    {
+      "section": "Orders and Returns",
+      "q": "What is your return policy?",
+      "a": "<p>Due to the nature of research materials, all sales are final, and we cannot accept returns for change of mind or ordering errors. However, we stand behind our quality with a 99% Purity Money-Back Guarantee. Purity Issues: If valid third-party testing shows a product is under 99% purity, we will issue a full refund (subject to review). Damaged/Incorrect Items: Please contact us at support@Peptiva.com within 48 hours of delivery. For full details on how to submit a purity claim, please visit our <a href=\"/Return-Refund\">Return &amp; Refund Policy</a>.</p>"
+    },
+    {
+      "section": "Orders and Returns",
+      "q": "How can I track my order?",
+      "a": "<p>Once your order ships, you'll receive a confirmation email with tracking information.</p>"
+    }
+  ],
+  "coas": [
+    {
+      "productSlug": "bpc-157-tb-500",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/bpc157-tb500-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "cjc-1295-ipamorelin-no-dac",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/cjc1295-ipamorelin-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "ghk-cu-50mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/ghk-cu-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "ps-1-sm",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/glp1-sm-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "nad-550mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/nad-plus-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "tesamorelin",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/tesamorlin-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "ps-2-tz",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/glp2-tz-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "ps-3-rt",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/glp-rtx-peptiva-supplies.pdf"
+    },
+    {
+      "productSlug": "ipamorelin-10mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_Ipamorelin_Editable.pdf"
+    },
+    {
+      "productSlug": "semax-10mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_SEMAX_Editable.pdf"
+    },
+    {
+      "productSlug": "mt-2-10mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_MT-2_Editable.pdf"
+    },
+    {
+      "productSlug": "mt-1-10mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_MT-1_Editable.pdf"
+    },
+    {
+      "productSlug": "epithalon-10mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_EPITHALON_Editable.pdf"
+    },
+    {
+      "productSlug": "glow-70mg-peptide-blend",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_GLOW_Editable.pdf"
+    },
+    {
+      "productSlug": "klow-80mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_KLOW_Editable.pdf"
+    },
+    {
+      "productSlug": "glutathione-1500mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_GLUTATHIONE_Editable.pdf"
+    },
+    {
+      "productSlug": "bpc-157",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_BPC-157.pdf"
+    },
+    {
+      "productSlug": "kpv-10-mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_KPV.pdf"
+    },
+    {
+      "productSlug": "tb500",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_TB500.pdf"
+    },
+    {
+      "productSlug": "mots-c",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/Peptiva_Supplies_MOTS-c.pdf"
+    },
+    {
+      "productSlug": "selank-10mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/SELANK-Peptiva-Supplies.pdf"
+    },
+    {
+      "productSlug": "pt-141-10mg",
+      "pdfUrl": "https://peptivasupplies.com/wp-content/uploads/2026/08/PT141_Peptiva_Supplies_1.pdf"
+    }
+  ]
+}

@@ -77,3 +77,110 @@ export const coaLots = mysqlTable(
   },
   (t) => [index("coa_product_idx").on(t.productId)],
 );
+
+export const orderStatuses = [
+  "pending", // creado, esperando pago en Bankful
+  "paid", // pago aprobado con firma verificada
+  "on_hold", // requiere revisión manual (firma inválida, monto distinto, pago pendiente)
+  "failed",
+  "cancelled",
+  "shipped",
+  "completed",
+  "refunded",
+] as const;
+
+export const orders = mysqlTable(
+  "orders",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    /** Token aleatorio para ver la confirmación sin cuenta. */
+    accessKey: varchar("access_key", { length: 64 }).notNull(),
+    status: mysqlEnum("status", orderStatuses).notNull().default("pending"),
+    email: varchar("email", { length: 191 }).notNull(),
+    firstName: varchar("first_name", { length: 80 }).notNull(),
+    lastName: varchar("last_name", { length: 80 }).notNull(),
+    phone: varchar("phone", { length: 32 }),
+    address1: varchar("address1", { length: 200 }).notNull(),
+    address2: varchar("address2", { length: 200 }),
+    city: varchar("city", { length: 100 }).notNull(),
+    state: varchar("state", { length: 2 }).notNull(),
+    zip: varchar("zip", { length: 20 }).notNull(),
+    country: varchar("country", { length: 2 }).notNull().default("US"),
+    subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+    bundleDiscount: decimal("bundle_discount", { precision: 10, scale: 2 }).notNull().default("0.00"),
+    couponCode: varchar("coupon_code", { length: 64 }),
+    couponDiscount: decimal("coupon_discount", { precision: 10, scale: 2 }).notNull().default("0.00"),
+    shippingTotal: decimal("shipping_total", { precision: 10, scale: 2 }).notNull().default("0.00"),
+    total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+    customerNote: text("customer_note"),
+    researchAcknowledged: boolean("research_acknowledged").notNull().default(false),
+    paymentTransactionId: varchar("payment_transaction_id", { length: 128 }),
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  (t) => [index("orders_email_idx").on(t.email), index("orders_status_idx").on(t.status)],
+);
+
+export const orderItems = mysqlTable(
+  "order_items",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    orderId: int("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+    productId: int("product_id"),
+    variantId: int("variant_id"),
+    name: varchar("name", { length: 191 }).notNull(),
+    variantLabel: varchar("variant_label", { length: 64 }),
+    unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+    quantity: int("quantity").notNull(),
+    bundlePercent: int("bundle_percent").notNull().default(0),
+    lineTotal: decimal("line_total", { precision: 10, scale: 2 }).notNull(),
+  },
+  (t) => [index("order_items_order_idx").on(t.orderId)],
+);
+
+/** Registro de cada llamada de Bankful (auditoría e idempotencia). */
+export const paymentEvents = mysqlTable(
+  "payment_events",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    orderId: int("order_id"),
+    kind: varchar("kind", { length: 32 }),
+    transStatus: varchar("trans_status", { length: 32 }),
+    transactionId: varchar("transaction_id", { length: 128 }),
+    signatureValid: boolean("signature_valid").notNull(),
+    outcome: varchar("outcome", { length: 64 }).notNull(),
+    payload: json("payload").$type<Record<string, string>>(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("payment_events_order_idx").on(t.orderId)],
+);
+
+export const coupons = mysqlTable("coupons", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Siempre en minúsculas. */
+  code: varchar("code", { length: 64 }).notNull().unique(),
+  type: mysqlEnum("type", ["percent", "fixed"]).notNull().default("percent"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  active: boolean("active").notNull().default(true),
+  expiresAt: timestamp("expires_at"),
+  usageLimit: int("usage_limit"),
+  usageCount: int("usage_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const contactMessages = mysqlTable("contact_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 120 }).notNull(),
+  email: varchar("email", { length: 191 }).notNull(),
+  subject: varchar("subject", { length: 191 }),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const leads = mysqlTable("leads", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 191 }).notNull().unique(),
+  source: varchar("source", { length: 32 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
