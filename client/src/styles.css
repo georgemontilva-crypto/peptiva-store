@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #15426e;
+  --color-navy-deep: #0e2f50;
+  --color-teal: #0fb0b3;
+  --color-teal-soft: #4fc7c9;
+  --color-ink: #2b3340;
+  --color-slate: #5d6675;
+  --color-muted: #98a0ad;
+  --color-mist: #f4f6f9;
+  --font-display: "Rubik", system-ui, sans-serif;
+  --font-sans: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+html { color: var(--color-ink); background: #fff; }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--color-navy); }
+:focus-visible { outline: 2px solid var(--color-teal); outline-offset: 2px; }
+
+/* Descripción larga migrada de WooCommerce */
+.product-copy { max-width: 68ch; line-height: 1.7; color: var(--color-slate); }
+.product-copy h2 { font-size: 1.375rem; font-weight: 500; margin: 2.25rem 0 0.75rem; }
+.product-copy h3 { font-size: 1.125rem; font-weight: 500; margin: 1.75rem 0 0.5rem; }
+.product-copy p { margin: 0 0 1rem; }
+.product-copy ul, .product-copy ol { margin: 0 0 1rem 1.25rem; list-style: disc; }
+.product-copy li { margin: 0.25rem 0; }
+.product-copy a { color: var(--color-navy); text-decoration: underline; text-underline-offset: 3px; }
+.product-copy strong { color: var(--color-ink); }
+.product-copy table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.925rem; }
+.product-copy th, .product-copy td { border-bottom: 1px solid #e3e7ee; padding: 0.5rem 0.25rem; text-align: left; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
