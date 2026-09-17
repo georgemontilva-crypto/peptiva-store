@@ -11,6 +11,7 @@ import { DEFAULT_SETTINGS, getSettings, updateSettings } from "../lib/settings";
 import { mailConfigured } from "../lib/mail";
 import { bankfulConfigured } from "../lib/bankful";
 import { CARRIERS, trackingLink } from "../lib/tracking";
+import { adminCoasRouter } from "./adminCoas";
 
 const PAID = ["paid", "on_hold", "shipped", "completed"] as const;
 const paidWhere = inArray(schema.orders.status, [...PAID]);
@@ -473,6 +474,7 @@ const settingsRouter = router({
         abandonedFirstDelayMinutes: z.number().int().min(15).max(7 * 24 * 60),
         abandonedSecondDelayHours: z.number().int().min(1).max(14 * 24),
         abandonedCouponCode: z.string().max(64),
+        shippingCutoffHour: z.number().int().min(0).max(23),
       }).partial(),
     )
     .mutation(async ({ input }) => {
@@ -500,4 +502,5 @@ export const adminRouter = router({
   commissions: commissionsRouter,
   settings: settingsRouter,
   inbox: inboxRouter,
+  coas: adminCoasRouter,
 });

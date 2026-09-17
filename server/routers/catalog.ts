@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
 import { publicProcedure, router } from "../trpc";
@@ -51,7 +51,7 @@ export const catalogRouter = router({
       db.select({ slug: categories.slug, name: categories.name }).from(productCategories)
         .innerJoin(categories, eq(categories.id, productCategories.categoryId))
         .where(eq(productCategories.productId, product.id)),
-      db.select().from(coaLots).where(eq(coaLots.productId, product.id)),
+      db.select().from(coaLots).where(eq(coaLots.productId, product.id)).orderBy(desc(coaLots.latest), desc(coaLots.testedAt), desc(coaLots.id)),
     ]);
     return { ...product, imageUrl: mediaUrl(product.imageUrl), gallery: (product.gallery ?? []).map((g) => mediaUrl(g) ?? g), variants, categories: cats, coas };
   }),

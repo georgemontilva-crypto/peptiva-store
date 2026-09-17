@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
 import { publicProcedure, rateLimit, router } from "../trpc";
@@ -17,16 +17,23 @@ export const contentRouter = router({
 
   faq: publicProcedure.query(() => content.faq),
 
-  coas: publicProcedure.query(async () =>
-    (await db
+  /** Un certificado por producto: el lote marcado como principal. */
+  coas: publicProcedure.query(async () => {
+    const rows = await db
       .select({
-        id: schema.coaLots.id, lotNumber: schema.coaLots.lotNumber, purity: schema.coaLots.purity, reportUrl: schema.coaLots.reportUrl,
-        testedAt: schema.coaLots.testedAt, productName: schema.products.name, productSlug: schema.products.slug, imageUrl: schema.products.imageUrl,
+        id: schema.coaLots.id, lotNumber: schema.coaLots.lotNumber, title: schema.coaLots.title, purity: schema.coaLots.purity,
+        identity: schema.coaLots.identity, heavyMetals: schema.coaLots.heavyMetals, testedAt: schema.coaLots.testedAt,
+        reportUrl: schema.coaLots.reportUrl, latest: schema.coaLots.latest, productId: schema.products.id,
+        productName: schema.products.name, productSlug: schema.products.slug, imageUrl: schema.products.imageUrl, sortOrder: schema.products.sortOrder,
       })
       .from(schema.coaLots)
       .innerJoin(schema.products, eq(schema.products.id, schema.coaLots.productId))
-      .orderBy(asc(schema.products.sortOrder))).map((c) => ({ ...c, imageUrl: mediaUrl(c.imageUrl) })),
-  ),
+      .orderBy(asc(schema.products.sortOrder), desc(schema.coaLots.latest), desc(schema.coaLots.testedAt));
+    const seen = new Set<number>();
+    return rows
+      .filter((r) => (seen.has(r.productId) ? false : (seen.add(r.productId), true)))
+      .map((c) => ({ ...c, imageUrl: mediaUrl(c.imageUrl), lotCount: rows.filter((r) => r.productId === c.productId && r.lotNumber !== "Current batch").length }));
+  }),
 
   sendContact: publicProcedure
     .input(

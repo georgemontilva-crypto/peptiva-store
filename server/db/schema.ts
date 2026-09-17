@@ -1,6 +1,9 @@
 import {
+  customType,
   mysqlTable, int, varchar, text, mediumtext, decimal, boolean, timestamp, json, mysqlEnum, primaryKey, index, date,
 } from "drizzle-orm/mysql-core";
+
+const longblob = customType<{ data: Buffer }>({ dataType: () => "longblob" });
 
 export const categories = mysqlTable("categories", {
   id: int("id").autoincrement().primaryKey(),
@@ -69,10 +72,22 @@ export const coaLots = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     productId: int("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
     lotNumber: varchar("lot_number", { length: 64 }).notNull(),
+    /** Nombre del compuesto tal como figura en el certificado (p. ej. "GLP-1 SM"). */
+    title: varchar("title", { length: 120 }),
+    /** Pureza HPLC en %, sin el símbolo (p. ej. "99.434"). */
     purity: varchar("purity", { length: 32 }),
+    specPurity: varchar("spec_purity", { length: 32 }),
+    appearance: varchar("appearance", { length: 120 }),
+    identity: varchar("identity", { length: 64 }),
+    /** Contenido neto medido; "Not requested" si el laboratorio no lo midió. */
+    measured: varchar("measured", { length: 191 }),
+    heavyMetals: varchar("heavy_metals", { length: 64 }),
+    endotoxin: varchar("endotoxin", { length: 64 }),
     lab: varchar("lab", { length: 191 }),
     testedAt: date("tested_at", { mode: "string" }),
     reportUrl: varchar("report_url", { length: 1024 }),
+    /** Lote que se muestra como principal en la ficha. */
+    latest: boolean("latest").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("coa_product_idx").on(t.productId)],
@@ -328,3 +343,12 @@ export const commissions = mysqlTable(
   },
   (t) => [index("commissions_affiliate_idx").on(t.affiliateId, t.status)],
 );
+
+/** PDFs de certificados subidos desde el admin (hasta migrar la media a R2). */
+export const coaFiles = mysqlTable("coa_files", {
+  id: int("id").autoincrement().primaryKey(),
+  filename: varchar("filename", { length: 191 }).notNull(),
+  size: int("size").notNull(),
+  data: longblob("data").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

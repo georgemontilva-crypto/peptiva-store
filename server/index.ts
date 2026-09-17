@@ -6,6 +6,7 @@ import { appRouter } from "./routers";
 import { createContext } from "./trpc";
 import { handleBankfulCallback } from "./lib/bankful-callback";
 import { handleMedia } from "./lib/media";
+import { handleCoaFile, handleCoaUpload } from "./lib/coa-files";
 import { runMigrations } from "./db/migrate";
 import { seedAdmin, seedIfEmpty } from "./db/seed";
 import { runAbandonedCartJob } from "./lib/abandoned";
@@ -23,6 +24,16 @@ app.get("/media/wp/*path", (req, res) => {
     console.error("[media] error", err);
     res.status(500).end();
   });
+});
+
+app.post("/admin-api/coa/upload", express.raw({ type: "*/*", limit: "16mb" }), (req, res) => {
+  handleCoaUpload(req, res).catch((err) => {
+    console.error("[coa] error al subir", err);
+    res.status(500).json({ error: "The PDF could not be processed." });
+  });
+});
+app.get("/coa-files/:id/:name", (req, res) => {
+  handleCoaFile(req, res).catch(() => res.status(500).end());
 });
 
 app.use("/trpc", createExpressMiddleware({ router: appRouter, createContext }));

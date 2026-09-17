@@ -98,15 +98,7 @@ export async function seedIfEmpty() {
     console.log(`[seed] ${wpCoupons.length} cupones`);
   }
 
-  if (await isEmpty(schema.coaLots)) {
-    const rows = await db.select({ id: schema.products.id, slug: schema.products.slug }).from(schema.products);
-    const bySlug = new Map(rows.map((r) => [r.slug, r.id]));
-    const values = content.coas
-      .map((c) => ({ productId: bySlug.get(c.productSlug), lotNumber: "Current batch", reportUrl: c.pdfUrl }))
-      .filter((v): v is { productId: number; lotNumber: string; reportUrl: string } => v.productId != null);
-    if (values.length) await db.insert(schema.coaLots).values(values);
-    console.log(`[seed] ${values.length} COAs`);
-  }
+  await seedCoaLots();
 }
 
 /**
@@ -128,4 +120,44 @@ export async function seedAdmin() {
   }
   await db.insert(schema.admins).values({ email, passwordHash: hashPassword(password), name: "Admin" });
   console.log(`[seed] administrador creado: ${email}`);
+}
+
+/**
+ * Carga los lotes con los datos leídos de cada certificado (importador de COA de WordPress).
+ * Corre si no hay lotes, o si solo existen los enlaces simples "Current batch" de la versión anterior.
+ */
+async function seedCoaLots() {
+  const existing = await db.select({ lot: schema.coaLots.lotNumber }).from(schema.coaLots);
+  const onlyPlaceholders = existing.every((r) => r.lot === "Current batch");
+  if (existing.length && !onlyPlaceholders) return;
+
+  const products = await db.select({ id: schema.products.id, slug: schema.products.slug }).from(schema.products);
+  const bySlug = new Map(products.map((r) => [r.slug, r.id]));
+  const detailed = content.coaLots.filter((l) => bySlug.has(l.productSlug));
+  const withLots = new Set(detailed.map((l) => l.productSlug));
+
+  const rows: (typeof schema.coaLots.$inferInsert)[] = detailed.map((l) => ({
+    productId: bySlug.get(l.productSlug)!,
+    lotNumber: l.lotNumber,
+    title: l.title || null,
+    purity: l.purity || null,
+    specPurity: l.specPurity || null,
+    appearance: l.appearance || null,
+    identity: l.identity || null,
+    measured: l.measured || null,
+    heavyMetals: l.heavyMetals || null,
+    endotoxin: l.endotoxin || null,
+    testedAt: l.testedAt,
+    reportUrl: l.reportUrl,
+    latest: l.latest,
+  }));
+  // Productos sin datos leídos: se conserva el enlace al PDF
+  for (const c of content.coas) {
+    const productId = bySlug.get(c.productSlug);
+    if (productId && !withLots.has(c.productSlug)) rows.push({ productId, lotNumber: "Current batch", reportUrl: c.pdfUrl, latest: true });
+  }
+
+  if (existing.length) await db.delete(schema.coaLots);
+  if (rows.length) await db.insert(schema.coaLots).values(rows);
+  console.log(`[seed] ${detailed.length} lotes con datos de COA y ${rows.length - detailed.length} enlaces sin datos`);
 }

@@ -112,7 +112,14 @@ export default function Coas() {
                       </span>
                     </div>
                     <h3 className="mt-4 font-display text-[1.05rem] font-medium leading-snug text-ink">{c.productName}</h3>
-                    <p className="mt-1 text-sm text-slate">{c.lotNumber}{c.purity ? `, ${c.purity} purity` : ""}</p>
+                    {c.purity ? (
+                      <>
+                        <p className="mt-1 font-display text-2xl font-bold tabular-nums text-emerald-700">{c.purity}%<span className="ml-1 text-xs font-medium text-slate">HPLC</span></p>
+                        <p className="text-xs text-slate">Lot {c.lotNumber}{c.testedAt ? ` · ${new Date(`${c.testedAt}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}{c.lotCount > 1 ? ` · ${c.lotCount} lots` : ""}</p>
+                      </>
+                    ) : (
+                      <p className="mt-1 text-sm text-slate">Certificate available (PDF)</p>
+                    )}
                     <div className="mt-4 flex flex-col gap-2">
                       {c.reportUrl ? (
                         <a href={c.reportUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-navy text-sm font-semibold text-white hover:bg-navy-deep">

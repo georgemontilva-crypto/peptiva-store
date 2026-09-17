@@ -16,6 +16,8 @@ export const DEFAULT_SETTINGS = {
   abandonedSecondDelayHours: 24,
   /** Cupón opcional que se ofrece en el segundo email */
   abandonedCouponCode: "" as string,
+  /** Hora de corte de envío en hora del Este (24 h). 14 = 2:00 PM */
+  shippingCutoffHour: 14,
 };
 
 export type StoreSettings = typeof DEFAULT_SETTINGS;

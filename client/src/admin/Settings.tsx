@@ -51,6 +51,12 @@ export default function Settings() {
         </div>
       </Card>
 
+      <Card title="Shipping">
+        <div className="grid gap-4 p-5 sm:grid-cols-3">
+          <Field label="Same-day cutoff (Eastern Time, 0–23)" hint="14 = 2:00 PM. Drives the countdown on product pages."><input type="number" min="0" max="23" value={v.shippingCutoffHour} onChange={num("shippingCutoffHour")} className={inputCls} /></Field>
+        </div>
+      </Card>
+
       {save.error ? <Notice tone="red">{save.error.message}</Notice> : null}
       {save.isSuccess ? <Notice tone="green">Settings saved.</Notice> : null}
       <Button type="submit" disabled={save.isPending}>{save.isPending ? "Saving…" : "Save settings"}</Button>

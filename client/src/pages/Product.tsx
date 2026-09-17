@@ -6,6 +6,9 @@ import { formatPrice, usePageMeta } from "../lib/format";
 import QuantityStepper from "../components/QuantityStepper";
 import ProductCard from "../components/ProductCard";
 import NotFound from "./NotFound";
+import ShipCountdown from "../components/ShipCountdown";
+import Collapsible from "../components/Collapsible";
+import { LotGrid, VerifiedResults, hasData } from "../components/ProductCoa";
 
 const TIERS = [
   { qty: 1, pct: 0, label: "1 vial" },
@@ -49,6 +52,7 @@ export default function Product() {
   const lineTotal = unit * quantity * (1 - pct / 100);
   const needsVariant = product.variants.length > 0 && !variant;
   const coa = product.coas[0];
+  const primaryLot = product.coas.find((l) => l.latest && hasData(l)) ?? product.coas.find(hasData);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10">
@@ -117,6 +121,14 @@ export default function Product() {
           </div>
           {pct ? <p className="mt-2 text-sm font-semibold text-teal">You save {formatPrice(unit * quantity - lineTotal)} with the {pct}% bundle discount.</p> : null}
 
+          <div className="mt-6 space-y-2.5">
+            <p className="flex items-center gap-2.5 rounded-2xl border border-line bg-white px-4 py-3 text-sm text-slate">
+              <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-alert" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" /></svg>
+              <span>Buy <strong className="text-navy">2</strong> save <strong className="text-alert">10%</strong> · buy <strong className="text-navy">3+</strong> save <strong className="text-alert">15%</strong> — applied automatically at checkout.</span>
+            </p>
+            <ShipCountdown />
+          </div>
+
           <ul className="mt-8 grid grid-cols-1 gap-3 text-sm text-slate sm:grid-cols-3">
             {["Free U.S. shipping", "Ships same or next day", "99% purity guarantee"].map((t) => (
               <li key={t} className="flex items-center gap-2">
@@ -126,17 +138,23 @@ export default function Product() {
             ))}
           </ul>
 
-          <div className="mt-8 rounded-2xl border border-line p-5">
-            <div className="flex items-center justify-between gap-4">
+          {primaryLot ? (
+            <a href="#verified-title" className="mt-8 flex items-center justify-between gap-4 rounded-2xl border border-line p-5 hover:border-navy/40">
+              <div>
+                <p className="text-sm text-slate">Lab verified · Lot {primaryLot.lotNumber}</p>
+                <p className="font-display text-xl font-bold text-emerald-700">{primaryLot.purity}% <span className="text-sm font-medium text-slate">HPLC purity</span></p>
+              </div>
+              <span className="text-sm font-semibold text-navy">See test results ↓</span>
+            </a>
+          ) : coa?.reportUrl ? (
+            <div className="mt-8 flex items-center justify-between gap-4 rounded-2xl border border-line p-5">
               <div>
                 <h2 className="text-base font-medium">Certificate of analysis</h2>
-                <p className="mt-1 text-sm text-slate">{coa ? `${coa.lotNumber}${coa.purity ? `, ${coa.purity} purity` : ""}` : "Report for this product is being prepared."}</p>
+                <p className="mt-1 text-sm text-slate">Independent lab report for this product.</p>
               </div>
-              {coa?.reportUrl ? (
-                <a href={coa.reportUrl} target="_blank" rel="noreferrer" className="btn btn-ghost shrink-0 px-4 py-2 text-sm">View PDF</a>
-              ) : null}
+              <a href={coa.reportUrl} target="_blank" rel="noreferrer" className="btn btn-ghost shrink-0 px-4 py-2 text-sm">View PDF</a>
             </div>
-          </div>
+          ) : null}
 
           <p className="mt-6 rounded-2xl bg-mist px-5 py-4 text-sm leading-relaxed text-slate">
             <strong className="text-ink">Research use only.</strong> This product is supplied for in-vitro laboratory research and is not intended for human or veterinary use.
@@ -144,12 +162,37 @@ export default function Product() {
         </div>
       </div>
 
+      {primaryLot ? (
+        <div className="mt-20">
+          <VerifiedResults lot={primaryLot} />
+        </div>
+      ) : null}
+
+      {product.coas.some((l) => l.reportUrl) ? (
+        <div className="mt-20">
+          <LotGrid lots={product.coas.filter((l) => l.reportUrl)} />
+        </div>
+      ) : null}
+
       {product.descriptionHtml ? (
-        <section className="mt-20 grid gap-10 border-t border-line pt-12 md:grid-cols-[1fr_2.2fr]">
-          <h2 className="text-2xl font-bold">About {product.name}</h2>
-          <div className="prose-copy" dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+        <section className="mt-20 border-t border-line pt-12" aria-labelledby="about-title">
+          <h2 id="about-title" className="text-2xl font-bold text-ink">About this product</h2>
+          <div className="mt-6 max-w-4xl">
+            <Collapsible>
+              <div className="prose-copy max-w-none" dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+            </Collapsible>
+          </div>
         </section>
       ) : null}
+
+      <section className="mt-14 rounded-3xl bg-gradient-to-r from-red-50 to-mist px-6 py-7 ring-1 ring-red-100 sm:px-8" aria-labelledby="notice-title">
+        <p id="notice-title" className="text-xs font-bold uppercase tracking-[0.16em] text-alert">⚠ Important research notice</p>
+        <div className="mt-4 space-y-3 text-sm leading-relaxed text-slate">
+          <p><strong className="text-ink">Not for human consumption.</strong> This product is sold exclusively for laboratory and research purposes. It is not intended to diagnose, treat, cure, or prevent any disease.</p>
+          <p>Scientific information on this page is drawn from peer-reviewed literature and provided for educational reference only. It should not be interpreted as medical advice or a product claim.</p>
+          <p>By purchasing, you confirm you are a qualified researcher and will use this material in accordance with all applicable laws and regulations.</p>
+        </div>
+      </section>
 
       {related.data ? (
         <section className="mt-24">

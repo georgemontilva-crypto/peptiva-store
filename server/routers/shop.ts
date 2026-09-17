@@ -47,6 +47,12 @@ export const shopRouter = router({
 
   paymentsEnabled: publicProcedure.query(() => bankfulConfigured()),
 
+  /** Datos públicos de la tienda para la ficha (hora de corte de envío). */
+  storeInfo: publicProcedure.query(async () => {
+    const s = await getSettings();
+    return { shippingCutoffHour: s.shippingCutoffHour };
+  }),
+
   placeOrder: externalProcedure.input(checkoutInput).mutation(async ({ input, ctx }) => {
     rateLimit(`order:${ctx.ip}`, 8, 10 * 60_000);
     if (!bankfulConfigured()) {

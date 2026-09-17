@@ -14,6 +14,7 @@ import AffiliateDetail from "./AffiliateDetail";
 import Commissions from "./Commissions";
 import Inbox from "./Inbox";
 import Settings from "./Settings";
+import Coas from "./Coas";
 
 const icon = (d: string) => (
   <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -41,6 +42,7 @@ const NAV = [
   {
     group: "Store",
     items: [
+      { to: "/admin/coas", label: "Lab reports (COAs)", icon: icon("M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10") },
       { to: "/admin/inbox", label: "Messages & leads", icon: icon("M4 6h16v12H4zM4 7l8 6 8-6") },
       { to: "/admin/settings", label: "Settings", icon: icon("M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1") },
     ],
@@ -58,6 +60,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/admin\/commissions/, "Commissions"],
   [/^\/admin\/inbox/, "Messages & leads"],
   [/^\/admin\/settings/, "Settings"],
+  [/^\/admin\/coas/, "Lab reports (COAs)"],
 ];
 
 export default function AdminApp() {
@@ -151,6 +154,7 @@ export default function AdminApp() {
               <Route path="/admin/commissions" element={<Commissions />} />
               <Route path="/admin/inbox" element={<Inbox />} />
               <Route path="/admin/settings" element={<Settings />} />
+              <Route path="/admin/coas" element={<Coas />} />
               <Route path="*" element={<p className="text-slate">Section not found. <Link to="/admin" className="text-navy underline">Go to dashboard</Link></p>} />
             </Routes>
           </ErrorBoundary>
