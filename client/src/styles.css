@@ -22,6 +22,8 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 h1, h2, h3, h4 { font-family: var(--font-display); color: var(--color-navy); text-wrap: balance; }
 p { text-wrap: pretty; }
 :focus-visible { outline: 2px solid var(--color-teal); outline-offset: 2px; }
+/* Todas las imágenes con esquinas redondeadas por defecto (las clases rounded-* lo ajustan) */
+img { border-radius: 1rem; }
 
 }
 

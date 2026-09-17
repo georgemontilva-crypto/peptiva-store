@@ -23,7 +23,7 @@ export default function About() {
             </p>
           </div>
           <div className="flex justify-center" aria-hidden>
-            {HERO_VIALS[0] ? <img src={HERO_VIALS[0]} alt="" className="vial max-h-80 drop-shadow-[0_24px_30px_rgba(12,42,71,0.22)]" /> : null}
+            {HERO_VIALS[0] ? <img src={HERO_VIALS[0]} alt="" className="vial aspect-square w-full max-w-80 rounded-3xl object-cover shadow-[0_28px_50px_-20px_rgba(12,42,71,0.45)]" /> : null}
           </div>
         </div>
       </section>

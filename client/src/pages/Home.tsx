@@ -41,7 +41,7 @@ export default function Home() {
                 <img
                   src={src}
                   alt=""
-                  className="vial w-full drop-shadow-[0_24px_30px_rgba(12,42,71,0.22)]"
+                  className="vial aspect-[4/5] w-full rounded-3xl object-cover shadow-[0_28px_50px_-20px_rgba(12,42,71,0.45)]"
                   style={{ animationDelay: `${i * -2}s`, ["--tilt" as string]: `${(i - 1) * 4}deg` }}
                 />
                 <div className="vial-shadow mt-3 h-3 w-2/3 rounded-full bg-navy-deep blur-md" style={{ animationDelay: `${i * -2}s` }} />
@@ -127,7 +127,7 @@ export default function Home() {
           <div className="relative min-h-72 bg-navy">
             <div className="lab-grid absolute inset-0 opacity-40 invert" aria-hidden />
             <div className="absolute inset-0 flex items-center justify-center p-10">
-              {HERO_VIALS[1] ? <img src={HERO_VIALS[1]} alt="" className="max-h-80 drop-shadow-[0_30px_40px_rgba(0,0,0,0.45)]" /> : null}
+              {HERO_VIALS[1] ? <img src={HERO_VIALS[1]} alt="" className="aspect-square max-h-80 w-full max-w-80 rounded-3xl object-cover shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)]" /> : null}
             </div>
           </div>
         </div>
