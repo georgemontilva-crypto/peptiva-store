@@ -70,7 +70,32 @@ export default function Checkout() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-12">
-      <h1 className="text-4xl font-bold tracking-tight">Checkout</h1>
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Checkout</h1>
+
+      {/* Teléfono: resumen plegable arriba, como en las tiendas grandes */}
+      {quote ? (
+        <details className="group mt-6 rounded-2xl bg-mist lg:hidden">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 font-semibold text-navy marker:hidden">
+            <span className="flex items-center gap-2">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden><path d="M5 7h14l-1.2 11.2A2 2 0 0 1 15.8 20H8.2a2 2 0 0 1-2-1.8L5 7zM9 7V6a3 3 0 0 1 6 0v1" /></svg>
+              <span className="group-open:hidden">Show order summary</span>
+              <span className="hidden group-open:inline">Hide order summary</span>
+            </span>
+            <span className="font-display text-lg tabular-nums">{formatPrice(quote.total)}</span>
+          </summary>
+          <div className="border-t border-line px-4 pb-4 pt-3">
+            <ul className="space-y-3">
+              {quote.lines.map((l) => (
+                <li key={`${l.productId}-${l.variantId}`} className="flex items-center gap-3 text-sm">
+                  <span className="min-w-0 flex-1"><span className="font-semibold text-ink">{l.name}</span>{l.variantLabel ? <span className="text-slate"> · {l.variantLabel}</span> : null} <span className="text-slate">× {l.quantity}</span></span>
+                  <span className="font-semibold tabular-nums">{formatPrice(l.lineTotal)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 border-t border-line pt-4"><Totals quote={quote} /></div>
+          </div>
+        </details>
+      ) : null}
 
       {payment === "failed" ? (
         <p role="alert" className="mt-6 rounded-2xl border border-alert/30 bg-red-50 px-5 py-4 text-sm text-alert">
@@ -82,7 +107,7 @@ export default function Checkout() {
       ) : null}
 
       <form
-        className="mt-10 grid gap-12 lg:grid-cols-[1.4fr_1fr]"
+        className="mt-8 grid gap-10 sm:mt-10 lg:grid-cols-[1.4fr_1fr] lg:gap-12"
         onSubmit={(e) => {
           e.preventDefault();
           if (!form.researchAcknowledged) return;

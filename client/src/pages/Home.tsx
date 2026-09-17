@@ -19,25 +19,25 @@ export default function Home() {
       <section className="relative overflow-hidden bg-mist">
         <MoleculeField tone="light" density={0.9} className="[mask-image:linear-gradient(to_right,rgba(0,0,0,.25)_0%,rgba(0,0,0,.25)_35%,black_60%)]" />
         <div className="lab-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_70%_50%,black,transparent_70%)]" aria-hidden />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-16 md:grid-cols-[1fr_1.05fr] md:pb-28 md:pt-24">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-5 pb-12 pt-10 sm:gap-12 sm:pb-20 sm:pt-16 md:grid-cols-[1fr_1.05fr] md:pb-28 md:pt-24">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-navy">
               <span className="lab-pulse h-2 w-2 rounded-full bg-teal" aria-hidden />
               Every lot tested by an independent lab
             </p>
-            <h1 className="mt-6 text-[2.6rem] font-bold leading-[1.05] tracking-tight sm:text-6xl">
+            <h1 className="mt-6 text-[2.4rem] font-bold leading-[1.05] tracking-tight sm:text-6xl">
               Research peptides you can verify.
             </h1>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-slate">
               Lyophilized compounds with 99%+ HPLC purity and a published certificate of analysis for each one, shipped from the U.S.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:flex sm:flex-wrap">
               <Link to="/shop" className="btn btn-primary px-7 py-3.5">Shop the catalog</Link>
               <Link to="/coas" className="btn btn-ghost px-7 py-3.5">View lab results</Link>
             </div>
           </div>
 
-          <div className="relative mx-auto flex h-[340px] w-full max-w-[520px] items-end justify-center gap-2 sm:h-[440px]" aria-hidden>
+          <div className="relative mx-auto flex h-[250px] w-full max-w-[520px] items-end justify-center gap-2 min-[420px]:h-[300px] sm:h-[440px]" aria-hidden>
             {HERO_VIALS.map((src, i) => (
               <div key={src} className={`flex flex-col items-center ${i === 1 ? "z-10 -mx-4 mb-10 w-[42%]" : "w-[34%]"}`}>
                 <img
@@ -100,7 +100,7 @@ export default function Home() {
           </div>
           <Link to="/shop" className="font-semibold text-navy underline underline-offset-4">All {products?.length ?? ""} products</Link>
         </div>
-        <div className="mt-10 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:mt-10 sm:gap-x-5 sm:gap-y-12 md:grid-cols-4">
           {products ? products.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />) : Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
         </div>
       </section>
@@ -108,7 +108,7 @@ export default function Home() {
       {/* Para investigadores */}
       <section className="mx-auto mt-28 max-w-6xl px-5" data-reveal>
         <div className="grid overflow-hidden rounded-[2rem] bg-navy-deep text-white md:grid-cols-2">
-          <div className="p-10 sm:p-14">
+          <div className="p-7 sm:p-14">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">Built for researchers</h2>
             <p className="mt-4 max-w-md leading-relaxed text-white/70">
               Consistent material from one lot to the next, documented so your results can be reproduced.
@@ -126,7 +126,7 @@ export default function Home() {
               ))}
             </ul>
           </div>
-          <div className="relative min-h-72 bg-navy">
+          <div className="relative hidden min-h-72 bg-navy md:block">
             <div className="lab-grid absolute inset-0 opacity-40 invert" aria-hidden />
             <div className="absolute inset-0 flex items-center justify-center p-10">
               {HERO_VIALS[1] ? <img src={HERO_VIALS[1]} alt="" className="aspect-square max-h-80 w-full max-w-80 rounded-3xl object-cover shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)]" /> : null}

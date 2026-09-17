@@ -8,20 +8,41 @@ export default function Header() {
   const cart = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname, hash } = useLocation();
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerH, setHeaderH] = useState(92);
 
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname, hash]);
 
+  useEffect(() => {
+    if (menuOpen && headerRef.current) setHeaderH(headerRef.current.getBoundingClientRect().height);
+  }, [menuOpen]);
+
+  // Bloquea el scroll de la página mientras el menú móvil está abierto
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
   return (
-    <header className="sticky top-0 z-40">
-      <p className="bg-black px-4 py-2 text-center text-[0.8rem] text-white/85">
-        Research use only. Not for human or veterinary use. <span className="hidden sm:inline">Free U.S. shipping on every order.</span>
+    <header ref={headerRef} className="sticky top-0 z-40">
+      <p className="truncate bg-black px-4 py-1.5 text-center text-[0.72rem] text-white/85 sm:py-2 sm:text-[0.8rem]">
+        Research use only. Not for human or veterinary use.<span className="hidden sm:inline"> Free U.S. shipping on every order.</span>
       </p>
       <div className="border-b border-line bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-6 px-5">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:gap-6 sm:px-5">
           <Link to="/" aria-label="Peptiva Supplies home" className="shrink-0">
-            <Logo className="h-10 sm:h-12" />
+            <Logo className="h-9 sm:h-12" />
           </Link>
 
           <nav aria-label="Main" className="hidden lg:block">
@@ -36,51 +57,88 @@ export default function Header() {
             <button
               type="button"
               onClick={cart.open}
-              className="relative flex h-10 items-center gap-2 rounded-full border border-line px-4 text-sm font-semibold text-navy hover:border-navy"
+              className="relative flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-line text-sm font-semibold text-navy hover:border-navy sm:h-10 sm:w-auto sm:px-4"
               aria-label={`Open cart, ${cart.count} items`}
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
                 <path d="M5 7h14l-1.2 11.2A2 2 0 0 1 15.8 20H8.2a2 2 0 0 1-2-1.8L5 7z" />
                 <path d="M9 7V6a3 3 0 0 1 6 0v1" />
               </svg>
-              Cart
-              {cart.count > 0 ? <span className="rounded-full bg-teal px-1.5 text-xs font-bold leading-5 text-white">{cart.count}</span> : null}
+              <span className="hidden sm:inline">Cart</span>
+              {cart.count > 0 ? (
+                <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-teal px-1.5 text-center text-xs font-bold leading-5 text-white sm:static sm:min-w-0">{cart.count}</span>
+              ) : null}
             </button>
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-navy lg:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-line text-navy lg:hidden"
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               onClick={() => setMenuOpen((v) => !v)}
             >
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
                 {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
               </svg>
             </button>
           </div>
         </div>
-
-        {menuOpen ? (
-          <nav id="mobile-menu" aria-label="Mobile" className="mobile-menu-enter max-h-[calc(100vh-6rem)] overflow-y-auto border-t border-line px-5 pb-6 lg:hidden">
-            {MAIN_NAV.map((item) =>
-              item.children ? (
-                <div key={item.label} className="border-b border-line py-3">
-                  <p className="py-1 text-xs font-semibold text-muted">{item.label}</p>
-                  {item.children.map((c) => (
-                    <Link key={c.to} to={c.to} className="block py-2 pl-3 font-semibold text-ink">{c.label}</Link>
-                  ))}
-                </div>
-              ) : (
-                <NavLink key={item.label} to={item.to!} end className="block border-b border-line py-3.5 font-semibold text-ink">
-                  {item.label}
-                </NavLink>
-              ),
-            )}
-          </nav>
-        ) : null}
       </div>
+
+      {menuOpen ? <MobileMenu top={headerH} onClose={() => setMenuOpen(false)} /> : null}
     </header>
+  );
+}
+
+/** Menú de teléfono: panel a pantalla completa bajo la barra, con grupos desplegables y accesos rápidos. */
+function MobileMenu({ onClose, top }: { onClose: () => void; top: number }) {
+  const { pathname } = useLocation();
+  const [openGroup, setOpenGroup] = useState<string | null>(() => MAIN_NAV.find((i) => i.children?.some((c) => c.to.split("#")[0] === pathname))?.label ?? null);
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden" style={{ top }}>
+      <button type="button" aria-label="Close menu" className="absolute inset-0 bg-navy-deep/30" onClick={onClose} />
+      <nav id="mobile-menu" aria-label="Mobile" className="mobile-menu-enter safe-bottom relative flex max-h-full flex-col overflow-y-auto rounded-b-3xl bg-white px-4 pb-6 pt-2 shadow-2xl">
+        {MAIN_NAV.map((item) =>
+          item.children ? (
+            <div key={item.label} className="border-b border-line">
+              <button
+                type="button"
+                onClick={() => setOpenGroup((g) => (g === item.label ? null : item.label))}
+                aria-expanded={openGroup === item.label}
+                className="flex min-h-14 w-full items-center justify-between text-left text-lg font-semibold text-ink"
+              >
+                {item.label}
+                <svg viewBox="0 0 20 20" className={`h-5 w-5 text-slate transition-transform ${openGroup === item.label ? "rotate-180" : ""}`} fill="currentColor" aria-hidden>
+                  <path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z" />
+                </svg>
+              </button>
+              {openGroup === item.label ? (
+                <ul className="menu-pop pb-3">
+                  {item.children.map((c) => (
+                    <li key={c.to}>
+                      <Link to={c.to} className="flex min-h-12 flex-col justify-center rounded-xl px-3 py-2 active:bg-mist">
+                        <span className="font-semibold text-ink">{c.label}</span>
+                        {c.description ? <span className="text-sm text-slate">{c.description}</span> : null}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : (
+            <NavLink key={item.label} to={item.to!} end className={({ isActive }) => `flex min-h-14 items-center border-b border-line text-lg font-semibold ${isActive ? "text-navy" : "text-ink"}`}>
+              {item.label}
+            </NavLink>
+          ),
+        )}
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <Link to="/shop" className="btn btn-primary">Shop all</Link>
+          <Link to="/track-order" className="btn btn-ghost">Track order</Link>
+        </div>
+        <a href="mailto:support@peptivasupplies.com" className="mt-4 text-center text-sm font-semibold text-slate">support@peptivasupplies.com</a>
+      </nav>
+    </div>
   );
 }
 

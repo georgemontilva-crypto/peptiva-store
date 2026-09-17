@@ -45,14 +45,14 @@ export default function Affiliate() {
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/75">
             Partner with a research brand built on quality, transparency and independently verified products, and earn on every sale you refer.
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:flex sm:flex-wrap">
             <a href="#apply" className="btn bg-teal px-7 py-3.5 text-white hover:bg-white hover:text-navy">Apply to join</a>
             <Link to="/affiliate-account" className="btn border border-white/40 px-7 py-3.5 text-white hover:bg-white hover:text-navy">Affiliate account</Link>
           </div>
-          <dl className="mt-14 grid max-w-2xl grid-cols-3 divide-x divide-white/15 border-y border-white/15">
+          <dl className="mt-12 grid max-w-2xl grid-cols-3 divide-x divide-white/15 border-y border-white/15 sm:mt-14">
             {TERMS.map(([k, v]) => (
-              <div key={v} className="px-4 py-6 first:pl-0">
-                <dt className="whitespace-nowrap font-display text-2xl font-bold text-white sm:text-3xl">{k}</dt>
+              <div key={v} className="px-3 py-5 first:pl-0 sm:px-4 sm:py-6">
+                <dt className="font-display text-xl font-bold text-white min-[420px]:text-2xl sm:text-3xl">{k}</dt>
                 <dd className="mt-1 text-sm text-white/65">{v}</dd>
               </div>
             ))}

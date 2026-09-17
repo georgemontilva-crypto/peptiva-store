@@ -87,7 +87,7 @@ img { border-radius: 1rem; }
 
 /* Entrada de cada página */
 @keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.page-enter { animation: page-in .45s cubic-bezier(.2,.7,.2,1) both; }
+.page-enter { animation: page-in .45s cubic-bezier(.2,.7,.2,1) backwards; }
 
 /* Desplegables del menú y menú móvil */
 @keyframes pop-in { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
@@ -124,3 +124,12 @@ img { border-radius: 1rem; }
 @keyframes draw-line { 0% { stroke-dashoffset: 1; } 55%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
 .chromatogram { stroke-dasharray: 1; animation: draw-line 5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .chromatogram { stroke-dasharray: none; } }
+
+/* ===== Móvil ===== */
+@media (max-width: 639px) {
+  /* iOS hace zoom si el texto del campo es menor a 16px */
+  .field, input, select, textarea { font-size: 16px !important; }
+  .btn { min-height: 44px; }
+}
+html, body { overflow-x: clip; }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }

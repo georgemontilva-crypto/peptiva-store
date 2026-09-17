@@ -43,16 +43,16 @@ export default function Shop() {
   }, [products.data, q, sort]);
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
-      <h1 className="text-4xl font-bold tracking-tight">{current?.name ?? "Shop"}</h1>
+    <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{current?.name ?? "Shop"}</h1>
       <p className="mt-3 max-w-xl text-slate">Every compound ships with a published certificate of analysis. Buy 2 of an item for 10% off, 3+ for 15% off.</p>
 
-      <div className="mt-10 flex flex-col gap-4 border-b border-line pb-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-2">
+      <div className="mt-8 flex flex-col gap-4 border-b border-line pb-6 sm:mt-10 lg:flex-row lg:items-center lg:justify-between">
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
           <Chip to="/shop" active={!category} label="All" />
           {cats.data?.map((c) => <Chip key={c.slug} to={`/shop?category=${c.slug}`} active={c.slug === category} label={c.name} />)}
         </div>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-[1fr_auto] gap-2 sm:flex sm:gap-3">
           <label htmlFor="shop-search" className="sr-only">Search products</label>
           <input id="shop-search" type="search" value={q} onChange={(e) => setParam("q", e.target.value || null)} placeholder="Search compounds" className="field w-full py-2 lg:w-56" />
           <label htmlFor="shop-sort" className="sr-only">Sort by</label>
@@ -65,13 +65,13 @@ export default function Shop() {
       {products.isError ? (
         <div className="mt-10"><LoadError what="the products" onRetry={() => products.refetch()} /></div>
       ) : products.isPending ? (
-        <div className="mt-12 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
         </div>
       ) : list.length ? (
         <>
           <p className="mt-6 text-sm text-muted">{list.length} {list.length === 1 ? "product" : "products"}</p>
-          <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12 md:grid-cols-3 lg:grid-cols-4">
             {list.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </>
@@ -87,7 +87,7 @@ export default function Shop() {
 
 function Chip({ to, active, label }: { to: string; active: boolean; label: string }) {
   return (
-    <Link to={to} aria-current={active ? "page" : undefined} className={`rounded-full border px-4 py-1.5 text-sm font-semibold ${active ? "border-navy bg-navy text-white" : "border-line text-slate hover:border-navy hover:text-navy"}`}>
+    <Link to={to} aria-current={active ? "page" : undefined} className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold ${active ? "border-navy bg-navy text-white" : "border-line text-slate hover:border-navy hover:text-navy"}`}>
       {label}
     </Link>
   );

@@ -48,14 +48,14 @@ export default function Coas() {
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/75">
             Open any certificate of analysis to see the identity and purity data behind a product before you order it.
           </p>
-          <dl className="mt-12 grid max-w-3xl grid-cols-3 divide-x divide-white/15 border-y border-white/15">
+          <dl className="mt-10 grid max-w-3xl grid-cols-3 divide-x divide-white/15 border-y border-white/15 sm:mt-12">
             {[
               [coas.data ? String(coas.data.length) : "—", "Published reports"],
               ["≥99%", "Purity release threshold"],
               ["HPLC + MS", "Testing methods"],
             ].map(([k, v]) => (
-              <div key={v} className="px-4 py-6 first:pl-0">
-                <dt className="whitespace-nowrap font-display text-xl font-bold text-white sm:text-2xl">{k}</dt>
+              <div key={v} className="px-3 py-5 first:pl-0 sm:px-4 sm:py-6">
+                <dt className="font-display text-lg font-bold leading-tight text-white min-[420px]:text-xl sm:whitespace-nowrap sm:text-2xl">{k}</dt>
                 <dd className="mt-1 text-sm text-white/65">{v}</dd>
               </div>
             ))}
@@ -95,7 +95,7 @@ export default function Coas() {
         {coas.isError ? (
           <div className="mt-10"><LoadError what="the lab results" onRetry={() => coas.refetch()} /></div>
         ) : (
-          <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
+          <ul className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:mt-10 sm:gap-x-5 sm:gap-y-10 lg:grid-cols-4">
             {coas.isPending
               ? Array.from({ length: 8 }, (_, i) => (
                   <li key={i} aria-hidden>
@@ -105,7 +105,7 @@ export default function Coas() {
                   </li>
                 ))
               : list.map((c) => (
-                  <li key={c.id} className="group flex flex-col">
+                  <li key={c.id} className="group flex h-full flex-col">
                     <div className="relative aspect-square overflow-hidden rounded-3xl bg-white ring-1 ring-line">
                       {c.imageUrl ? <img src={c.imageUrl} alt="" loading="lazy" className="h-full w-full rounded-3xl object-cover transition-transform duration-500 group-hover:scale-[1.04]" /> : null}
                       <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-navy shadow-sm">
@@ -113,7 +113,7 @@ export default function Coas() {
                         Verified
                       </span>
                     </div>
-                    <h3 className="mt-4 font-display text-[1.05rem] font-medium leading-snug text-ink">{c.productName}</h3>
+                    <h3 className="mt-3 line-clamp-2 min-h-[2.6em] break-words font-display text-[0.95rem] font-medium leading-[1.3] text-ink sm:mt-4 sm:text-[1.05rem]" title={c.productName}>{c.productName}</h3>
                     {c.purity ? (
                       <>
                         <p className="mt-1 font-display text-2xl font-bold tabular-nums text-emerald-700">{c.purity}%<span className="ml-1 text-xs font-medium text-slate">HPLC</span></p>
@@ -122,14 +122,14 @@ export default function Coas() {
                     ) : (
                       <p className="mt-1 text-sm text-slate">Certificate available (PDF)</p>
                     )}
-                    <div className="mt-4 flex flex-col gap-2">
+                    <div className="mt-auto flex flex-col gap-2 pt-4">
                       {c.reportUrl ? (
-                        <a href={c.reportUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-navy text-sm font-semibold text-white hover:bg-navy-deep">
+                        <a href={c.reportUrl} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-navy text-sm font-semibold text-white hover:bg-navy-deep">
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 14h6M9 17h4" /></svg>
                           View report<span className="sr-only"> for {c.productName} (PDF, opens in new tab)</span>
                         </a>
                       ) : null}
-                      <Link to={`/product/${c.productSlug}`} className="inline-flex h-10 items-center justify-center rounded-full border border-line text-sm font-semibold text-navy hover:border-navy">
+                      <Link to={`/product/${c.productSlug}`} className="inline-flex h-11 items-center justify-center rounded-full border border-line text-sm font-semibold text-navy hover:border-navy">
                         View product<span className="sr-only">: {c.productName}</span>
                       </Link>
                     </div>

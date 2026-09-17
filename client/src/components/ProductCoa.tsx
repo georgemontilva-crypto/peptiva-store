@@ -33,17 +33,17 @@ export function VerifiedResults({ lot, lots }: { lot: Lot; lots: Lot[] }) {
   const withPdf = lots.filter((l) => l.reportUrl);
 
   return (
-    <section className="rounded-[2rem] bg-mist px-5 py-12 ring-1 ring-line sm:px-8 xl:-mx-10 xl:px-10" aria-labelledby="verified-title">
+    <section className="-mx-5 rounded-none bg-mist px-4 py-10 ring-1 ring-line sm:mx-0 sm:rounded-[2rem] sm:px-8 sm:py-12 xl:-mx-10 xl:px-10" aria-labelledby="verified-title">
       <div className="mx-auto max-w-2xl text-center" data-reveal>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal">Verified test results</p>
-        <h2 id="verified-title" className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Every lot, independently verified.</h2>
+        <h2 id="verified-title" className="mt-3 text-[1.75rem] font-bold leading-tight tracking-tight sm:text-4xl">Every lot, independently verified.</h2>
         <p className="mt-4 leading-relaxed text-slate">
           Each batch is analyzed by an accredited third-party laboratory. The report below reflects the identity, purity and full-panel specification data released with this product.
         </p>
       </div>
 
       <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_1.3fr] xl:grid-cols-[0.82fr_1.45fr_0.95fr]">
-        <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-navy to-navy-deep p-7 text-white" data-reveal>
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-navy to-navy-deep p-6 text-white sm:p-7" data-reveal>
           <div className="lab-grid absolute inset-0 opacity-20 [filter:invert(1)] [mask-image:linear-gradient(to_top_left,black,transparent_70%)]" aria-hidden />
           <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-24" aria-hidden />
           <div className="relative">
@@ -63,7 +63,19 @@ export function VerifiedResults({ lot, lots }: { lot: Lot; lots: Lot[] }) {
         </div>
 
         <div className="overflow-hidden rounded-3xl border-t-2 border-teal bg-white ring-1 ring-line" data-reveal style={{ transitionDelay: "80ms" }}>
-          <table className="w-full text-sm">
+          {/* Teléfono: filas apiladas para que nada se corte */}
+          <dl className="divide-y divide-line sm:hidden">
+            {rows.map(([k, v, spec]) => (
+              <div key={k} className="px-4 py-3">
+                <dt className="flex items-baseline justify-between gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted">
+                  <span>{k}</span>
+                  <span className="normal-case tracking-normal">Spec: {spec}</span>
+                </dt>
+                <dd className="mt-1 text-[0.95rem] font-semibold text-ink">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          <table className="hidden w-full text-sm sm:table">
             <caption className="sr-only">Certificate of analysis for lot {lot.lotNumber}</caption>
             <thead>
               <tr className="text-left text-[0.68rem] uppercase tracking-[0.14em] text-muted">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { useCart } from "../lib/cart";
@@ -23,6 +23,17 @@ export default function Product() {
   const cart = useCart();
   const [variantId, setVariantId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const buyRef = useRef<HTMLDivElement>(null);
+  const [showSticky, setShowSticky] = useState(false);
+
+  // En teléfono, cuando el botón principal sale de pantalla aparece una barra fija de compra abajo
+  useEffect(() => {
+    const el = buyRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setShowSticky(!e!.isIntersecting && e!.boundingClientRect.top < 0), { threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [product?.id, isLoading]);
 
   useEffect(() => {
     setVariantId(product?.variants[0]?.id ?? null);
@@ -81,9 +92,9 @@ export default function Product() {
           {product.variants.length > 0 ? (
             <fieldset className="mt-8">
               <legend className="label">Amount per vial</legend>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div className="mt-2 grid grid-cols-3 gap-2">
                 {product.variants.map((v) => (
-                  <label key={v.id} className={`cursor-pointer rounded-2xl border-2 px-4 py-3 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-teal ${v.id === variantId ? "border-navy bg-navy/[0.04]" : "border-line hover:border-navy/40"}`}>
+                  <label key={v.id} className={`cursor-pointer rounded-2xl border-2 px-2.5 py-2.5 text-center sm:px-4 sm:py-3 sm:text-left has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-teal ${v.id === variantId ? "border-navy bg-navy/[0.04]" : "border-line hover:border-navy/40"}`}>
                     <input type="radio" name="variant" className="sr-only" checked={v.id === variantId} onChange={() => setVariantId(v.id)} />
                     <span className="block font-display font-medium text-ink">{v.label}</span>
                     <span className="block text-sm tabular-nums text-slate">{formatPrice(v.salePrice ?? v.price)}</span>
@@ -99,7 +110,7 @@ export default function Product() {
               {TIERS.map((t) => {
                 const active = t.qty === 3 ? quantity >= 3 : quantity === t.qty;
                 return (
-                  <button key={t.qty} type="button" onClick={() => setQuantity(t.qty)} aria-pressed={active} className={`rounded-2xl border-2 px-3 py-3 text-left ${active ? "border-teal bg-teal-soft/50" : "border-line hover:border-teal/50"}`}>
+                  <button key={t.qty} type="button" onClick={() => setQuantity(t.qty)} aria-pressed={active} className={`rounded-2xl border-2 px-2 py-2.5 text-center sm:px-3 sm:py-3 sm:text-left ${active ? "border-teal bg-teal-soft/50" : "border-line hover:border-teal/50"}`}>
                     <span className="block text-sm font-semibold text-ink">{t.label}</span>
                     <span className={`block text-xs ${t.pct ? "font-semibold text-teal" : "text-slate"}`}>{t.pct ? `Save ${t.pct}%` : "Standard price"}</span>
                   </button>
@@ -108,11 +119,11 @@ export default function Product() {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <div ref={buyRef} className="mt-8 flex items-center gap-3 sm:gap-4">
             <QuantityStepper value={quantity} onChange={setQuantity} />
             <button
               type="button"
-              className="btn btn-primary flex-1 py-3.5"
+              className="btn btn-primary min-w-0 flex-1 whitespace-nowrap px-3 py-3.5 sm:px-6"
               disabled={needsVariant}
               onClick={() => cart.add({ productId: product.id, variantId: variant?.id ?? null, quantity })}
             >
@@ -139,7 +150,7 @@ export default function Product() {
           </ul>
 
           {primaryLot ? (
-            <a href="#verified-title" className="mt-8 flex items-center justify-between gap-4 rounded-2xl border border-line p-5 hover:border-navy/40">
+            <a href="#verified-title" className="mt-8 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl border border-line p-4 hover:border-navy/40 sm:p-5">
               <div>
                 <p className="text-sm text-slate">Lab verified · Lot {primaryLot.lotNumber}</p>
                 <p className="font-display text-xl font-bold text-emerald-700">{primaryLot.purity}% <span className="text-sm font-medium text-slate">HPLC purity</span></p>
@@ -195,11 +206,30 @@ export default function Product() {
       {related.data ? (
         <section className="mt-24">
           <h2 className="text-2xl font-bold">Researchers also order</h2>
-          <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:grid-cols-4">
             {related.data.filter((p) => p.id !== product.id).slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>
       ) : null}
+      {/* Espacio para que la barra fija no tape el final de la página */}
+      <div className="h-16 sm:hidden" aria-hidden />
+      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 pt-3 shadow-[0_-10px_30px_-15px_rgba(11,39,66,0.25)] backdrop-blur transition-transform duration-300 safe-bottom sm:hidden ${showSticky ? "translate-y-0" : "translate-y-full"}`} aria-hidden={!showSticky}>
+        <div className="flex items-center gap-3 pb-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-ink">{product.name}{variant ? ` · ${variant.label}` : ""}</p>
+            <p className="text-sm tabular-nums text-navy">{formatPrice(lineTotal)}{quantity > 1 ? <span className="text-slate"> · {quantity} vials</span> : null}</p>
+          </div>
+          <button
+            type="button"
+            tabIndex={showSticky ? 0 : -1}
+            className="btn btn-primary shrink-0 px-5"
+            disabled={needsVariant}
+            onClick={() => cart.add({ productId: product.id, variantId: variant?.id ?? null, quantity })}
+          >
+            Add to cart
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
