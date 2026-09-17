@@ -79,7 +79,7 @@ export default function Coas() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5" aria-labelledby="reports-title">
-        <div className="sticky top-[6.25rem] z-20 -mx-5 flex flex-col gap-3 border-b border-line bg-white/95 px-5 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+        <div className="sticky top-[6.5rem] z-20 -mx-5 flex flex-col gap-3 border-b border-line bg-white/95 px-5 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
           <h2 id="reports-title" className="text-2xl font-bold">
             All reports {coas.data ? <span className="text-base font-normal text-muted">({list.length})</span> : null}
           </h2>

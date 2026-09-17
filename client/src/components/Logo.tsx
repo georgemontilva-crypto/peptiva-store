@@ -1,12 +1,19 @@
-export default function Logo({ inverted = false }: { inverted?: boolean }) {
+/**
+ * Logo oficial de Peptiva (PNG transparente en /public, sirve sobre fondo claro y oscuro).
+ * - horizontal: ícono al lado del nombre, para el menú (se lee bien a poca altura)
+ * - stacked: versión original apilada, para el footer y espacios amplios
+ */
+export default function Logo({ variant = "horizontal", className = "h-11" }: { variant?: "horizontal" | "stacked"; className?: string }) {
+  const src = variant === "horizontal" ? "/logo-peptiva-horizontal.png" : "/logo-peptiva.png";
+  const [w, h] = variant === "horizontal" ? [560, 153] : [440, 358];
   return (
-    <span className={`inline-flex items-center gap-2 font-display text-[1.35rem] font-bold tracking-tight ${inverted ? "text-white" : "text-navy"}`}>
-      <svg viewBox="0 0 28 28" className="h-7 w-7" aria-hidden>
-        <rect x="9" y="2" width="10" height="4" rx="1.5" fill="currentColor" />
-        <path d="M8.5 7h11v15a4 4 0 0 1-4 4h-3a4 4 0 0 1-4-4V7z" fill="none" stroke="currentColor" strokeWidth="2" />
-        <path d="M10.5 16h7v6a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-6z" fill="#0fb0b3" />
-      </svg>
-      Peptiva
-    </span>
+    <img
+      src={src}
+      alt="Peptiva — Premium Research Peptides"
+      width={w}
+      height={h}
+      className={`${className} w-auto rounded-none object-contain`}
+      decoding="async"
+    />
   );
 }

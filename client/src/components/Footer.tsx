@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="mt-28 bg-navy-deep text-white/70">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div>
-          <Logo inverted />
+          <Logo variant="stacked" className="h-28" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
             Research peptides with third-party purity testing, shipped from the United States.
           </p>

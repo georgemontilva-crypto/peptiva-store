@@ -18,7 +18,7 @@ export default function Login() {
           login.mutate({ email, password });
         }}
       >
-        <div className="flex items-center gap-2"><Logo /><span className="rounded-md bg-navy px-1.5 py-0.5 text-[0.65rem] font-bold tracking-wider text-white">ADMIN</span></div>
+        <div className="flex items-center gap-2"><Logo className="h-10" /><span className="rounded-md bg-navy px-1.5 py-0.5 text-[0.65rem] font-bold tracking-wider text-white">ADMIN</span></div>
         <h1 className="mt-6 font-display text-2xl font-bold text-navy">Sign in</h1>
         <div className="mt-6 space-y-4">
           <Field label="Email"><input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} /></Field>

@@ -19,9 +19,9 @@ export default function Header() {
         Research use only. Not for human or veterinary use. <span className="hidden sm:inline">Free U.S. shipping on every order.</span>
       </p>
       <div className="border-b border-line bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-5">
-          <Link to="/" aria-label="Peptiva Supplies home">
-            <Logo />
+        <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-6 px-5">
+          <Link to="/" aria-label="Peptiva Supplies home" className="shrink-0">
+            <Logo className="h-10 sm:h-12" />
           </Link>
 
           <nav aria-label="Main" className="hidden lg:block">

@@ -100,7 +100,7 @@ export default function AdminApp() {
       <aside className={`fixed left-0 top-0 z-40 flex h-[100dvh] w-64 shrink-0 flex-col border-r border-line bg-white transition-transform lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4">
           <Link to="/admin" className="flex items-center gap-2">
-            <Logo />
+            <Logo className="h-9" />
             <span className="rounded-md bg-navy px-1.5 py-0.5 text-[0.65rem] font-bold tracking-wider text-white">ADMIN</span>
           </Link>
           <button type="button" className="rounded-lg p-1.5 text-slate hover:bg-mist lg:hidden" onClick={() => setOpen(false)} aria-label="Close menu">✕</button>

@@ -38,7 +38,7 @@ export default function AgeGate() {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-deep/85 p-4 backdrop-blur-sm">
       <div role="dialog" aria-modal="true" aria-labelledby="gate-title" className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
-        <Logo />
+        <Logo variant="stacked" className="mx-auto h-24" />
         <h2 id="gate-title" className="mt-6 text-2xl font-bold">Confirm researcher access</h2>
         <p className="mt-3 text-sm leading-relaxed text-slate">
           Peptiva Supplies sells compounds strictly for laboratory research. By entering, you confirm that you are 18 or older and that
