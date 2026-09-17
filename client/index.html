@@ -43,6 +43,7 @@
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- Chatbot Lynx AI -->
-    <script src="https://lynxaiassistant.com/widget.js" data-key="lx_30f7b8b82f59f8f15a51a8b9ef1b39f5a01080b86a07a43d" async></script>
+    <!-- Loader actual del widget: dominio con www, ruta /api/ y atributo data-api-key. No se muestra en el admin. -->
+    <script src="https://www.lynxaiassistant.com/api/widget.js" data-api-key="lx_30f7b8b82f59f8f15a51a8b9ef1b39f5a01080b86a07a43d" data-exclude-paths="/admin" defer></script>
   </body>
 </html>
