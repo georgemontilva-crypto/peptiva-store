@@ -10,7 +10,9 @@ export default function CartDrawer() {
   const panelRef = useRef<HTMLDivElement>(null);
   const { pathname } = useLocation();
 
-  useEffect(() => cart.close(), [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    cart.close();
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!cart.isOpen) return;

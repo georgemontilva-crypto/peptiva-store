@@ -19,7 +19,11 @@ import NotFound from "./pages/NotFound";
 
 export default function App() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Llaves obligatorias: en Chrome reciente window.scrollTo devuelve una Promise, y si el efecto la devuelve
+  // React la trata como función de limpieza y la app se cae al navegar ("l is not a function").
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   useEffect(() => {
     (window as unknown as { __appMounted?: boolean }).__appMounted = true;
   }, []);

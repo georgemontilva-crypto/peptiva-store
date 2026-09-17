@@ -8,7 +8,9 @@ export default function Header() {
   const cart = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
-  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40">
