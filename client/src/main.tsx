@@ -7,6 +7,7 @@ import superjson from "superjson";
 import { trpc } from "./lib/trpc";
 import { CartProvider } from "./lib/cart";
 import App from "./App";
+import RootRecovery from "./components/RootRecovery";
 import "./styles.css";
 
 function Root() {
@@ -40,6 +41,37 @@ function Root() {
   );
 }
 
+/**
+ * El traductor de Chrome (y extensiones como Grammarly) reemplazan nodos de texto por sus propios elementos.
+ * Cuando React luego intenta quitar o insertar esos nodos, lanza "removeChild/insertBefore: not a child"
+ * y la app entera se desmonta: pantalla en blanco al navegar. Este parche hace esas operaciones tolerantes.
+ */
+if (typeof Node === "function" && Node.prototype) {
+  const originalRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function <T extends Node>(this: Node, child: T): T {
+    if (child.parentNode !== this) {
+      console.warn("[dom] removeChild ignorado: el nodo ya no pertenece a este padre (traductor/extensión)");
+      return child;
+    }
+    return originalRemoveChild.call(this, child) as T;
+  };
+  const originalInsertBefore = Node.prototype.insertBefore;
+  Node.prototype.insertBefore = function <T extends Node>(this: Node, newNode: T, referenceNode: Node | null): T {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      console.warn("[dom] insertBefore sin referencia válida (traductor/extensión)");
+      return originalInsertBefore.call(this, newNode, null) as T;
+    }
+    return originalInsertBefore.call(this, newNode, referenceNode) as T;
+  };
+}
+
+const bootErrors = (window as unknown as { __bootErrors?: string[] }).__bootErrors;
+const report = (label: string) => (error: unknown) => {
+  const msg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  bootErrors?.push(`${label}: ${msg}`);
+  console.error(`[react] ${label}`, error);
+};
+
 // Si una imagen externa no carga, se reemplaza por un marcador en vez de dejar un hueco en blanco
 const IMG_FALLBACK =
   "data:image/svg+xml," +
@@ -53,8 +85,14 @@ document.addEventListener(
   true,
 );
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById("root")!, {
+  onUncaughtError: report("uncaught"),
+  onCaughtError: report("caught"),
+  onRecoverableError: report("recoverable"),
+}).render(
   <StrictMode>
-    <Root />
+    <RootRecovery>
+      <Root />
+    </RootRecovery>
   </StrictMode>,
 );
