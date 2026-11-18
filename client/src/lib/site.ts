@@ -13,34 +13,24 @@ export const POLICY_LINKS = [
   { to: "/privacy-policy", label: "Privacy policy" },
 ];
 
-export type NavItem = { label: string; to?: string; children?: { to: string; label: string; description?: string }[] };
+export type NavItem = { label: string; to?: string; badge?: string; children?: { to: string; label: string; description?: string }[] };
 
-/** Menú principal: mismo orden que el sitio de WordPress. */
+/**
+ * Menú principal. Los enlaces describen lo que hay detrás ("Research Peptides" en vez de "Shop"),
+ * que es lo que lee el buscador y lo que busca un laboratorio.
+ */
 export const MAIN_NAV: NavItem[] = [
-  { label: "Home", to: "/" },
-  { label: "Contact", to: "/contact" },
+  { label: "Research Peptides", to: "/shop" },
+  { label: "Bundle Pricing", to: "/shop?category=bundle-save", badge: "Save" },
   { label: "COAs", to: "/coas" },
+  { label: "Contact us", to: "/contact" },
   {
     label: "More",
     children: [
-      { to: "/shop", label: "Shop", description: "All research peptides" },
-      { to: "/about-us", label: "About Us", description: "Our standards and mission" },
+      { to: "/about-us", label: "About Us", description: "Our standards and sourcing" },
       { to: "/faq", label: "FAQ", description: "Purity, shipping and storage" },
-    ],
-  },
-  {
-    label: "User",
-    children: [
       { to: "/track-order", label: "Track order", description: "Status and tracking number" },
-      { to: "/my-account", label: "My account", description: "Orders and account details" },
-    ],
-  },
-  {
-    label: "Affiliate Program",
-    children: [
-      { to: "/affiliate", label: "Affiliate Program", description: "Earn 10% on referred sales" },
-      { to: "/affiliate#apply", label: "Apply to join", description: "Send your application" },
-      { to: "/affiliate-account", label: "Affiliate login", description: "Your link, clicks and commissions" },
+      { to: "/affiliate", label: "Affiliate Program", description: "Earn on referred research orders" },
     ],
   },
 ];

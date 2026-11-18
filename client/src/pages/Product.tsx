@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { useCart } from "../lib/cart";
-import { formatPrice, usePageMeta } from "../lib/format";
+import { formatPrice, usePageMeta, useJsonLd, breadcrumbLd, SITE_URL } from "../lib/format";
 import QuantityStepper from "../components/QuantityStepper";
 import ProductCard from "../components/ProductCard";
 import NotFound from "./NotFound";
@@ -40,7 +40,46 @@ export default function Product() {
     setQuantity(1);
   }, [product?.id]);
 
-  usePageMeta(product ? (product.seoTitle ?? `${product.name} — Peptiva Supplies`) : undefined, product?.seoDescription);
+  usePageMeta(
+    product ? (product.seoTitle ?? `${product.name} | Research Peptide | Peptiva Supplies`) : undefined,
+    product?.seoDescription,
+    { image: product?.imageUrl ?? undefined, type: "product" },
+  );
+
+  // Ficha de producto para el buscador: precio, disponibilidad y marca
+  useJsonLd(
+    "product",
+    product
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          sku: product.slug,
+          description: (product.seoDescription ?? product.shortDescription ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+          image: product.imageUrl ? [product.imageUrl.startsWith("http") ? product.imageUrl : SITE_URL + product.imageUrl] : undefined,
+          brand: { "@type": "Brand", name: "Peptiva Supplies" },
+          category: "Research peptide",
+          offers: {
+            "@type": "Offer",
+            url: `${SITE_URL}/product/${product.slug}`,
+            priceCurrency: "USD",
+            price: Number(product.price).toFixed(2),
+            availability: "https://schema.org/InStock",
+            seller: { "@type": "Organization", name: "Peptiva Supplies" },
+          },
+        }
+      : null,
+  );
+  useJsonLd(
+    "product-crumbs",
+    product
+      ? breadcrumbLd([
+          { name: "Home", path: "/" },
+          { name: "Research Peptides", path: "/shop" },
+          { name: product.name, path: `/product/${product.slug}` },
+        ])
+      : null,
+  );
 
   if (isLoading) {
     return (

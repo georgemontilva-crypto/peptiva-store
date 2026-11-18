@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { trpc } from "../lib/trpc";
-import { usePageMeta } from "../lib/format";
+import { usePageMeta, useJsonLd, breadcrumbLd } from "../lib/format";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import LoadError from "../components/LoadError";
 
@@ -20,7 +20,20 @@ export default function Shop() {
   const cats = trpc.catalog.categories.useQuery();
   const products = trpc.catalog.products.useQuery(category ? { category } : undefined);
   const current = cats.data?.find((c) => c.slug === category);
-  usePageMeta(`${current?.name ?? "Shop research peptides"} — Peptiva Supplies`);
+  usePageMeta(
+    `${current?.name ?? "Research Peptides"} | 99%+ HPLC Purity | Peptiva Supplies`,
+    current?.name
+      ? `${current.name} research peptides, third-party tested at 99%+ HPLC purity with a Certificate of Analysis published for every lot. Free U.S. shipping.`
+      : "The full catalog of research peptides from Peptiva Supplies, third-party tested at 99%+ HPLC purity with a Certificate of Analysis for every lot. Free U.S. shipping, laboratory research use only.",
+  );
+  useJsonLd(
+    "shop-crumbs",
+    breadcrumbLd(
+      current?.slug
+        ? [{ name: "Home", path: "/" }, { name: "Research Peptides", path: "/shop" }, { name: current.name, path: `/shop?category=${current.slug}` }]
+        : [{ name: "Home", path: "/" }, { name: "Research Peptides", path: "/shop" }],
+    ),
+  );
 
   const setParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(params);
