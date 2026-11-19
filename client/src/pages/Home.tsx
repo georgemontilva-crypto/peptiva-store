@@ -158,9 +158,9 @@ export default function Home() {
               className="relative order-1 h-[280px] w-full sm:h-[360px] lg:absolute lg:inset-y-0 lg:left-1/2 lg:right-0 lg:order-2 lg:h-full lg:w-1/2"
               aria-hidden
             >
-              <img src={cut(0)} alt="" className="vial float-shadow absolute bottom-[-18%] left-[-6%] h-[88%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
-              <img src={cut(1)} alt="" className="vial float-shadow absolute bottom-[-10%] left-[24%] z-10 h-[104%] w-auto max-w-none rotate-[3deg] rounded-none object-contain" style={{ animationDelay: "-2s" }} />
-              <img src={cut(2)} alt="" className="vial float-shadow absolute bottom-[0%] right-[-4%] h-[66%] w-auto max-w-none rotate-[12deg] rounded-none object-contain" style={{ animationDelay: "-4s" }} />
+              <img src={cut(0)} alt="" className="vial float-shadow absolute bottom-[-8%] left-[-2%] h-[74%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
+              <img src={cut(1)} alt="" className="vial float-shadow absolute bottom-[-6%] left-[28%] z-10 h-[92%] w-auto max-w-none rotate-[3deg] rounded-none object-contain" style={{ animationDelay: "-2s" }} />
+              <img src={cut(2)} alt="" className="vial float-shadow absolute bottom-[4%] right-[-2%] h-[56%] w-auto max-w-none rotate-[12deg] rounded-none object-contain" style={{ animationDelay: "-4s" }} />
             </div>
           </div>
         </div>

@@ -8,22 +8,29 @@ import { fetchOriginal, ALLOWED_EXT } from "./media";
 /**
  * Recorte del fondo de las fotos de producto.
  *
- * Las fotos del catálogo vienen sobre fondo blanco. Para que los frascos puedan "flotar" sobre los
- * degradados de la portada hace falta un PNG con transparencia. Aquí el servidor descarga la foto
- * original una sola vez, borra el fondo y guarda el PNG recortado en disco; a partir de ahí se sirve
- * desde caché, así que el recorte se hace una vez por imagen y no en cada visita.
+ * Las fotos del catálogo son tomas de estudio: el frasco sobre un fondo de color (azul, lila, blanco)
+ * que a menudo lleva un degradado y una superficie al pie. Para que el frasco pueda "flotar" sobre los
+ * degradados de la portada hace falta un PNG con transparencia. El servidor descarga la foto original
+ * una sola vez, borra el fondo y guarda el PNG recortado en disco; a partir de ahí se sirve desde caché.
  *
- * El borrado NO es "todo píxel blanco": eso agujerearía las etiquetas claras del frasco. Se hace una
- * inundación desde los bordes de la foto, de modo que solo desaparece el blanco conectado con el borde.
+ * El método es un crecimiento de región desde los bordes de la foto, no "borra el color X":
+ *   - un píxel se suma al fondo si se parece al píxel de fondo vecino (LOCAL), lo que permite seguir
+ *     degradados suaves sin cortar de golpe;
+ *   - y además no puede alejarse demasiado del color medio del marco (GLOBAL), que es lo que impide
+ *     que la selección se cuele dentro del producto por una sombra o un reflejo.
+ * Como solo crece desde el borde, los blancos y claros de la etiqueta nunca se agujerean.
  */
 const CACHE_DIR = path.join(os.tmpdir(), "peptiva-cutout");
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
-/** Un píxel cuenta como fondo si es claro y sin color dominante (gris muy claro o blanco). */
-const LIGHT = 238; // mínimo de cada canal
-const SPREAD = 14; // diferencia máxima entre canales
-/** Zona de transición: a partir de este valor el píxel se vuelve semitransparente, para que no quede borde dentado. */
-const SOFT = 216;
+/** Variación máxima respecto al píxel de fondo vecino (sigue el degradado del fondo). */
+const LOCAL = 10;
+/** Distancia máxima al color medio del marco de la foto (frena la selección en el producto). */
+const GLOBAL = 72;
+/** Pasadas de suavizado del borde, para que no quede dentado. */
+const FEATHER = 2;
+/** Por debajo de este alfa el píxel no cuenta para calcular el recorte. */
+const EDGE_ALPHA = 24;
 
 const inflight = new Map<string, Promise<Buffer | null>>();
 
@@ -41,13 +48,10 @@ async function loadSharp(): Promise<SharpFactory | null> {
   return sharpMod;
 }
 
-const isLight = (r: number, g: number, b: number) =>
-  r >= LIGHT && g >= LIGHT && b >= LIGHT && Math.max(r, g, b) - Math.min(r, g, b) <= SPREAD;
-
 /**
  * Quita el fondo y devuelve un PNG recortado al contenido.
- * Devuelve null si la imagen no se puede procesar o si el recorte se comería casi toda la foto
- * (señal de que el fondo no era claro y es mejor dejar la original).
+ * Devuelve null si la imagen no se puede procesar o si el resultado no es creíble (queda casi nada,
+ * o no se quitó prácticamente nada): en ese caso es mejor servir la foto original.
  */
 export async function removeBackground(input: Buffer): Promise<Buffer | null> {
   const sharp = await loadSharp();
@@ -61,40 +65,94 @@ export async function removeBackground(input: Buffer): Promise<Buffer | null> {
     .toBuffer({ resolveWithObject: true });
 
   const { width: w, height: h } = info;
-  const px = (x: number, y: number) => (y * w + x) * 4;
+  const off = (i: number) => i * 4;
 
-  // 1) Inundación desde los bordes: marca el fondo conectado con el exterior
+  // Color medio del marco exterior: es la referencia de "fondo"
+  let sr = 0;
+  let sg = 0;
+  let sb = 0;
+  let n = 0;
+  const sample = (x: number, y: number) => {
+    const p = off(y * w + x);
+    sr += data[p]!;
+    sg += data[p + 1]!;
+    sb += data[p + 2]!;
+    n++;
+  };
+  for (let x = 0; x < w; x++) {
+    sample(x, 0);
+    sample(x, h - 1);
+  }
+  for (let y = 0; y < h; y++) {
+    sample(0, y);
+    sample(w - 1, y);
+  }
+  const seedR = sr / n;
+  const seedG = sg / n;
+  const seedB = sb / n;
+
+  const dist2 = (p: number, r: number, g: number, b: number) => {
+    const dr = data[p]! - r;
+    const dg = data[p + 1]! - g;
+    const db = data[p + 2]! - b;
+    return dr * dr + dg * dg + db * db;
+  };
+  const LOCAL2 = LOCAL * LOCAL;
+  const GLOBAL2 = GLOBAL * GLOBAL;
+
+  // Crecimiento de región desde los cuatro bordes
   const bg = new Uint8Array(w * h);
   const queue = new Int32Array(w * h);
   let head = 0;
   let tail = 0;
-  const push = (x: number, y: number) => {
+  const push = (x: number, y: number, from: number) => {
     const i = y * w + x;
     if (bg[i]) return;
-    const o = px(x, y);
-    if (!isLight(data[o]!, data[o + 1]!, data[o + 2]!)) return;
+    const p = off(i);
+    if (from >= 0 && dist2(p, data[from]!, data[from + 1]!, data[from + 2]!) > LOCAL2) return;
+    if (dist2(p, seedR, seedG, seedB) > GLOBAL2) return;
     bg[i] = 1;
     queue[tail++] = i;
   };
   for (let x = 0; x < w; x++) {
-    push(x, 0);
-    push(x, h - 1);
+    push(x, 0, -1);
+    push(x, h - 1, -1);
   }
   for (let y = 0; y < h; y++) {
-    push(0, y);
-    push(w - 1, y);
+    push(0, y, -1);
+    push(w - 1, y, -1);
   }
   while (head < tail) {
     const i = queue[head++]!;
     const x = i % w;
     const y = (i / w) | 0;
-    if (x > 0) push(x - 1, y);
-    if (x < w - 1) push(x + 1, y);
-    if (y > 0) push(x, y - 1);
-    if (y < h - 1) push(x, y + 1);
+    const p = off(i);
+    if (x > 0) push(x - 1, y, p);
+    if (x < w - 1) push(x + 1, y, p);
+    if (y > 0) push(x, y - 1, p);
+    if (y < h - 1) push(x, y + 1, p);
   }
 
-  // 2) Alfa: fondo transparente, y borde suave según lo claro que sea el píxel vecino
+  // Alfa con el borde suavizado
+  const alpha = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) alpha[i] = bg[i] ? 0 : 255;
+  for (let pass = 0; pass < FEATHER; pass++) {
+    const prev = Uint8Array.from(alpha);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (!prev[i]) continue;
+        let sum = prev[i]!;
+        let c = 1;
+        if (x > 0) { sum += prev[i - 1]!; c++; }
+        if (x < w - 1) { sum += prev[i + 1]!; c++; }
+        if (y > 0) { sum += prev[i - w]!; c++; }
+        if (y < h - 1) { sum += prev[i + w]!; c++; }
+        alpha[i] = Math.round(sum / c);
+      }
+    }
+  }
+
   let minX = w;
   let minY = h;
   let maxX = -1;
@@ -103,24 +161,9 @@ export async function removeBackground(input: Buffer): Promise<Buffer | null> {
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const i = y * w + x;
-      const o = px(x, y);
-      let alpha = data[o + 3]!;
-      if (bg[i]) {
-        alpha = 0;
-      } else {
-        // ¿toca el fondo? entonces se difumina según su luminosidad
-        const touches =
-          (x > 0 && bg[i - 1]) || (x < w - 1 && bg[i + 1]) || (y > 0 && bg[i - w]) || (y < h - 1 && bg[i + w]);
-        if (touches) {
-          const lum = (data[o]! * 299 + data[o + 1]! * 587 + data[o + 2]! * 114) / 1000;
-          if (lum > SOFT) {
-            const t = Math.min(1, (lum - SOFT) / (255 - SOFT));
-            alpha = Math.round(alpha * (1 - t));
-          }
-        }
-      }
-      data[o + 3] = alpha;
-      if (alpha > 8) {
+      const a = alpha[i]!;
+      data[off(i) + 3] = a;
+      if (a > EDGE_ALPHA) {
         kept++;
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
@@ -130,8 +173,9 @@ export async function removeBackground(input: Buffer): Promise<Buffer | null> {
     }
   }
 
-  // Si queda menos del 2% de la foto, el recorte salió mal: mejor la original
-  if (maxX < 0 || kept < w * h * 0.02) return null;
+  // Ni "se borró casi todo" ni "no se borró nada": en ambos casos la original es mejor
+  const ratio = kept / (w * h);
+  if (maxX < 0 || ratio < 0.02 || ratio > 0.97) return null;
 
   const pad = 2;
   const left = Math.max(0, minX - pad);
