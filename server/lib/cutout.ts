@@ -37,6 +37,10 @@ const OPEN = 2;
 const BLOB_SHARE = 0.08;
 /** Por debajo de este alfa el píxel no cuenta para calcular el recorte. */
 const EDGE_ALPHA = 24;
+/** Hueco máximo que se rellena, como fracción del ancho o alto del producto en esa línea. */
+const MAX_GAP = 0.22;
+/** El producto debe ocupar al menos esta parte de su propio recuadro; si no, el recorte no es creíble. */
+const MIN_FILL = 0.3;
 
 const inflight = new Map<string, Promise<Buffer | null>>();
 
@@ -83,6 +87,95 @@ function morph(src: Uint8Array<ArrayBuffer>, w: number, h: number, r: number, gr
         if (tmp[ny * w + x] === hit) v = hit;
       }
       out[y * w + x] = v;
+    }
+  }
+  return out;
+}
+
+/**
+ * Rellena los huecos que quedaron encerrados dentro del producto (el fondo que se vio a través del
+ * vidrio y quedó marcado como transparente). Solo se conserva como transparente lo que llega al borde.
+ */
+function fillHoles(fg: Uint8Array<ArrayBuffer>, w: number, h: number): Uint8Array<ArrayBuffer> {
+  const outside = new Uint8Array(w * h);
+  const stack = new Int32Array(w * h);
+  let top = 0;
+  const seed = (i: number) => {
+    if (fg[i] || outside[i]) return;
+    outside[i] = 1;
+    stack[top++] = i;
+  };
+  for (let x = 0; x < w; x++) {
+    seed(x);
+    seed((h - 1) * w + x);
+  }
+  for (let y = 0; y < h; y++) {
+    seed(y * w);
+    seed(y * w + w - 1);
+  }
+  while (top > 0) {
+    const i = stack[--top]!;
+    const x = i % w;
+    const y = (i / w) | 0;
+    if (x > 0) seed(i - 1);
+    if (x < w - 1) seed(i + 1);
+    if (y > 0) seed(i - w);
+    if (y < h - 1) seed(i + w);
+  }
+  const out = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) out[i] = outside[i] ? 0 : 1;
+  return out;
+}
+
+/**
+ * Repara los "mordiscos": entradas del fondo que llegan desde el borde y se comen un trozo del
+ * frasco. Para cada columna y cada fila se rellenan los huecos cortos que quedan entre dos tramos de
+ * producto. El límite de longitud es lo que impide que dos objetos separados se unan en uno.
+ */
+function fillGaps(fg: Uint8Array<ArrayBuffer>, w: number, h: number): Uint8Array<ArrayBuffer> {
+  const out = Uint8Array.from(fg);
+  const span = (len: number) => Math.round(len * MAX_GAP);
+
+  for (let x = 0; x < w; x++) {
+    let first = -1;
+    let last = -1;
+    for (let y = 0; y < h; y++) {
+      if (fg[y * w + x]) {
+        if (first < 0) first = y;
+        last = y;
+      }
+    }
+    if (first < 0) continue;
+    const limit = span(last - first + 1);
+    let y = first;
+    while (y <= last) {
+      if (out[y * w + x]) { y++; continue; }
+      let end = y;
+      while (end <= last && !out[end * w + x]) end++;
+      if (end - y <= limit) for (let k = y; k < end; k++) out[k * w + x] = 1;
+      y = end;
+    }
+  }
+
+  for (let y = 0; y < h; y++) {
+    const row = y * w;
+    let first = -1;
+    let last = -1;
+    for (let x = 0; x < w; x++) {
+      if (fg[row + x]) {
+        if (first < 0) first = x;
+        last = x;
+      }
+    }
+    if (first < 0) continue;
+    const limit = span(last - first + 1);
+    let x = first;
+    while (x <= last) {
+      if (out[row + x]) { x++; continue; }
+      let end = x;
+      while (end <= last && !out[row + end]) end++;
+      if (end - x <= limit) for (let k = x; k < end; k++) out[row + k] = 1;
+      x = end;
     }
   }
   return out;
@@ -230,6 +323,8 @@ export async function removeBackground(input: Buffer): Promise<Buffer | null> {
   fg = morph(fg, w, h, OPEN, false);
   fg = morph(fg, w, h, OPEN, true);
   fg = keepLargeBlobs(fg, w, h);
+  fg = fillHoles(fg, w, h);
+  fg = fillGaps(fg, w, h);
 
   // Alfa con el borde suavizado
   const alpha = new Uint8Array(w * h);
@@ -274,6 +369,15 @@ export async function removeBackground(input: Buffer): Promise<Buffer | null> {
   // Ni "se borró casi todo" ni "no se borró nada": en ambos casos la original es mejor
   const ratio = kept / (w * h);
   if (maxX < 0 || ratio < 0.02 || ratio > 0.97) return null;
+
+  // Red de seguridad: un frasco llena buena parte de su propio recuadro. Si lo que queda está lleno de
+  // mordiscos, o el recorte se comió medio producto, la silueta no es creíble y es preferible servir la
+  // foto original antes que publicar un frasco roto.
+  const boxArea = (maxX - minX + 1) * (maxY - minY + 1);
+  if (kept / boxArea < MIN_FILL) {
+    console.warn(`[cutout] silueta poco creíble (${Math.round((kept / boxArea) * 100)}% del recuadro), se sirve la original`);
+    return null;
+  }
 
   const pad = 2;
   const left = Math.max(0, minX - pad);
