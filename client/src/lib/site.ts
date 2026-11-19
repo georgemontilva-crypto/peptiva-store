@@ -4,6 +4,13 @@ export const HERO_VIALS = [
   "/media/wp/2026/08/ps3.png",
 ];
 
+/**
+ * Misma imagen, servida con el fondo recortado (PNG transparente) para las composiciones flotantes.
+ * Si la foto no viene del proxy de medios se devuelve tal cual.
+ */
+export const cutUrl = (url: string | null | undefined): string =>
+  url && url.startsWith("/media/wp/") ? url.replace("/media/wp/", "/media/cut/") : (url ?? "");
+
 export const SUPPORT_EMAIL = "support@peptivasupplies.com";
 
 export const POLICY_LINKS = [

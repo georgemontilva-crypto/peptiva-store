@@ -6,6 +6,7 @@ import { appRouter } from "./routers";
 import { createContext } from "./trpc";
 import { handleBankfulCallback } from "./lib/bankful-callback";
 import { handleMedia } from "./lib/media";
+import { handleCutout } from "./lib/cutout";
 import { handleCoaFile, handleCoaUpload } from "./lib/coa-files";
 import { runMigrations } from "./db/migrate";
 import { seedAdmin, seedIfEmpty } from "./db/seed";
@@ -22,6 +23,14 @@ app.get("/healthz", (_req, res) => {
 app.get("/media/wp/*path", (req, res) => {
   handleMedia(req, res).catch((err) => {
     console.error("[media] error", err);
+    res.status(500).end();
+  });
+});
+
+// Misma imagen pero con el fondo recortado, para las composiciones de la portada
+app.get("/media/cut/*path", (req, res) => {
+  handleCutout(req, res).catch((err) => {
+    console.error("[cutout] error", err);
     res.status(500).end();
   });
 });

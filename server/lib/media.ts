@@ -14,6 +14,7 @@ const ORIGIN = (process.env.MEDIA_ORIGIN || "https://peptivasupplies.com").repla
 const UPLOADS_PREFIX = /^https?:\/\/(www\.)?peptivasupplies\.com\/wp-content\/uploads\//i;
 const CACHE_DIR = path.join(os.tmpdir(), "peptiva-media");
 const ALLOWED = /\.(png|jpe?g|webp|gif|svg|avif)$/i;
+export const ALLOWED_EXT = ALLOWED;
 const TYPES: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", gif: "image/gif", svg: "image/svg+xml", avif: "image/avif" };
 
 fs.mkdirSync(CACHE_DIR, { recursive: true });
@@ -45,6 +46,23 @@ async function download(rel: string, file: string): Promise<Buffer | null> {
     }
   }
   return null;
+}
+
+/** Devuelve el archivo original (de caché o descargándolo). Lo usa también el recorte de fondo. */
+export async function fetchOriginal(rel: string): Promise<Buffer | null> {
+  if (!/^[\w\-./]+$/.test(rel) || rel.includes("..") || !ALLOWED.test(rel)) return null;
+  const ext = rel.split(".").pop()!.toLowerCase();
+  const file = path.join(CACHE_DIR, crypto.createHash("sha1").update(rel).digest("hex") + "." + ext);
+  try {
+    return await fs.promises.readFile(file);
+  } catch {
+    let job = inflight.get(rel);
+    if (!job) {
+      job = download(rel, file).finally(() => inflight.delete(rel));
+      inflight.set(rel, job);
+    }
+    return job;
+  }
 }
 
 export async function handleMedia(req: Request, res: Response) {

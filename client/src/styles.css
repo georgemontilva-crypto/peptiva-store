@@ -86,6 +86,10 @@ img { border-radius: 1rem; }
 .prose-copy th, .prose-copy td { border-bottom: 1px solid var(--color-line); padding: .5rem .25rem; text-align: left; }
 }
 
+/* Sombra para imágenes recortadas: sigue la silueta, no la caja */
+.float-shadow { filter: drop-shadow(0 26px 24px rgb(12 42 71 / .22)) drop-shadow(0 6px 8px rgb(12 42 71 / .12)); }
+.float-shadow-sm { filter: drop-shadow(0 12px 14px rgb(12 42 71 / .18)); }
+
 /* Hero: frascos flotando */
 @keyframes vial-float { 0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); } 50% { transform: translateY(-14px) rotate(var(--tilt, 0deg)); } }
 @keyframes vial-shadow { 0%, 100% { transform: scaleX(1); opacity: .35; } 50% { transform: scaleX(.8); opacity: .2; } }

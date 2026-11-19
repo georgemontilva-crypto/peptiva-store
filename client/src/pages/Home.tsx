@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { usePageMeta, useJsonLd, SITE_URL, formatPrice } from "../lib/format";
-import { HERO_VIALS } from "../lib/site";
+import { HERO_VIALS, cutUrl } from "../lib/site";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import NewsletterForm from "../components/NewsletterForm";
 
@@ -96,6 +96,8 @@ export default function Home() {
 
   const featured = products?.slice(0, 8);
   const shot = (i: number) => products?.[i]?.imageUrl ?? HERO_VIALS[i % HERO_VIALS.length]!;
+  /** La misma foto sin fondo, para que el frasco flote sobre el degradado. */
+  const cut = (i: number) => cutUrl(shot(i));
 
   useJsonLd(
     "home-items",
@@ -156,9 +158,9 @@ export default function Home() {
               className="relative order-1 h-[280px] w-full sm:h-[360px] lg:absolute lg:inset-y-0 lg:left-1/2 lg:right-0 lg:order-2 lg:h-full lg:w-1/2"
               aria-hidden
             >
-              <img src={shot(0)} alt="" className="vial absolute bottom-[-14%] left-[-4%] w-[52%] max-w-[360px] rotate-[-9deg] rounded-[2rem] object-cover shadow-[0_45px_80px_-35px_rgba(12,42,71,0.5)]" />
-              <img src={shot(1)} alt="" className="vial absolute bottom-[-6%] left-[26%] z-10 w-[50%] max-w-[340px] rotate-[3deg] rounded-[2rem] object-cover shadow-[0_45px_80px_-35px_rgba(12,42,71,0.55)]" style={{ animationDelay: "-2s" }} />
-              <img src={shot(2)} alt="" className="vial absolute bottom-[2%] right-[-6%] w-[42%] max-w-[280px] rotate-[12deg] rounded-[2rem] object-cover shadow-[0_45px_80px_-35px_rgba(12,42,71,0.5)]" style={{ animationDelay: "-4s" }} />
+              <img src={cut(0)} alt="" className="vial float-shadow absolute bottom-[-18%] left-[-6%] h-[88%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
+              <img src={cut(1)} alt="" className="vial float-shadow absolute bottom-[-10%] left-[24%] z-10 h-[104%] w-auto max-w-none rotate-[3deg] rounded-none object-contain" style={{ animationDelay: "-2s" }} />
+              <img src={cut(2)} alt="" className="vial float-shadow absolute bottom-[0%] right-[-4%] h-[66%] w-auto max-w-none rotate-[12deg] rounded-none object-contain" style={{ animationDelay: "-4s" }} />
             </div>
           </div>
         </div>
@@ -180,8 +182,8 @@ export default function Home() {
       <section className="band-lilac" data-reveal>
         <div className="wrap grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-24">
           <div className="relative mx-auto hidden h-[420px] w-full max-w-md lg:block" aria-hidden>
-            <img src={shot(3)} alt="" className="absolute inset-0 h-full w-full rounded-[2.5rem] object-cover shadow-[0_40px_80px_-40px_rgba(12,42,71,0.45)]" />
-            <div className="absolute -right-6 bottom-10 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-20px_rgba(12,42,71,0.4)]">
+            <img src={cut(3)} alt="" className="vial float-shadow absolute inset-0 mx-auto h-full w-auto max-w-none rounded-none object-contain" />
+            <div className="absolute -right-2 bottom-10 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-20px_rgba(12,42,71,0.4)]">
               <p className="text-sm font-semibold">99%+ purity</p>
               <p className="text-xs font-light text-slate">Verified by HPLC</p>
             </div>
@@ -229,7 +231,7 @@ export default function Home() {
 
           <div className="mx-auto mt-10 flex max-w-xl items-center gap-5 rounded-[1.75rem] bg-white p-5 text-left shadow-[0_28px_60px_-35px_rgba(12,42,71,0.55)]">
             <div className="relative shrink-0">
-              <img src={shot(0)} alt="" className="h-20 w-20 rounded-2xl object-cover" />
+              <img src={cut(0)} alt="" className="float-shadow-sm h-20 w-20 rounded-none object-contain" />
               <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-ink px-2 py-0.5 text-[0.65rem] font-semibold text-white">×3</span>
             </div>
             <div className="min-w-0 flex-1">
@@ -265,7 +267,7 @@ export default function Home() {
                   <p className="mt-3 text-[0.95rem] font-light leading-relaxed text-slate">{p.body}</p>
                   <Link to={p.cta.to} className="btn btn-ghost mt-5 text-sm">{p.cta.label}</Link>
                 </div>
-                <img src={shot(i)} alt="" className="hidden h-28 w-28 shrink-0 rounded-2xl object-cover sm:block" aria-hidden />
+                <img src={cut(i)} alt="" className="float-shadow-sm hidden h-28 w-28 shrink-0 rounded-none object-contain sm:block" aria-hidden />
               </article>
             ))}
           </div>
@@ -316,7 +318,7 @@ export default function Home() {
           <div className="relative">
             <div className="panel-ice relative overflow-hidden rounded-[2.5rem] p-10">
               <div className="lab-grid absolute inset-0 opacity-60" aria-hidden />
-              <img src={shot(4)} alt="" className="relative mx-auto aspect-square w-full max-w-sm rounded-[2rem] object-cover shadow-[0_40px_80px_-40px_rgba(12,42,71,0.45)]" aria-hidden />
+              <img src={cut(4)} alt="" className="vial float-shadow relative mx-auto h-[360px] w-auto max-w-full rounded-none object-contain" aria-hidden />
               <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-full" aria-hidden />
             </div>
             <div className="absolute right-4 top-6 rounded-2xl bg-white p-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)]">
