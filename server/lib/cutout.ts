@@ -29,6 +29,12 @@ const LOCAL = 10;
 const GLOBAL = 72;
 /** Pasadas de suavizado del borde, para que no quede dentado. */
 const FEATHER = 2;
+/** Radio del cierre: tapa las fugas finas por las que el fondo se mete en el producto. */
+const CLOSE = 4;
+/** Radio de la apertura: borra motitas sueltas. */
+const OPEN = 2;
+/** Una pieza suelta se conserva solo si llega a esta fracción de la pieza mayor. */
+const BLOB_SHARE = 0.08;
 /** Por debajo de este alfa el píxel no cuenta para calcular el recorte. */
 const EDGE_ALPHA = 24;
 
@@ -46,6 +52,86 @@ async function loadSharp(): Promise<SharpFactory | null> {
     sharpMod = null;
   }
   return sharpMod;
+}
+
+/**
+ * Dilata (grow = true) o erosiona (grow = false) una máscara de 0/1 con un radio en píxeles.
+ * Se hace en dos pasadas, horizontal y vertical, que es lo mismo que un cuadrado y mucho más barato.
+ */
+function morph(src: Uint8Array<ArrayBuffer>, w: number, h: number, r: number, grow: boolean): Uint8Array<ArrayBuffer> {
+  if (r <= 0) return src;
+  const hit = grow ? 1 : 0;
+  const tmp = new Uint8Array(w * h);
+  const out = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let v = src[y * w + x]!;
+      for (let d = -r; d <= r && v !== hit; d++) {
+        const nx = x + d;
+        if (nx < 0 || nx >= w || d === 0) continue;
+        if (src[y * w + nx] === hit) v = hit;
+      }
+      tmp[y * w + x] = v;
+    }
+  }
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let v = tmp[y * w + x]!;
+      for (let d = -r; d <= r && v !== hit; d++) {
+        const ny = y + d;
+        if (ny < 0 || ny >= h || d === 0) continue;
+        if (tmp[ny * w + x] === hit) v = hit;
+      }
+      out[y * w + x] = v;
+    }
+  }
+  return out;
+}
+
+/**
+ * Deja solo las piezas conectadas que sean grandes de verdad: la mayor y cualquier otra que llegue
+ * a una fracción de ella. Así se van las astillas de otra foto y el polvillo suelto.
+ */
+function keepLargeBlobs(fg: Uint8Array<ArrayBuffer>, w: number, h: number): Uint8Array<ArrayBuffer> {
+  const label = new Int32Array(w * h).fill(-1);
+  const sizes: number[] = [];
+  const stack = new Int32Array(w * h);
+  for (let start = 0; start < w * h; start++) {
+    if (!fg[start] || label[start] !== -1) continue;
+    const id = sizes.length;
+    let size = 0;
+    let top = 0;
+    stack[top++] = start;
+    label[start] = id;
+    while (top > 0) {
+      const i = stack[--top]!;
+      size++;
+      const x = i % w;
+      const y = (i / w) | 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          const j = ny * w + nx;
+          if (fg[j] && label[j] === -1) {
+            label[j] = id;
+            stack[top++] = j;
+          }
+        }
+      }
+    }
+    sizes.push(size);
+  }
+  if (!sizes.length) return fg;
+  const biggest = Math.max(...sizes);
+  const floor = Math.max(biggest * BLOB_SHARE, 120);
+  const out = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    const id = label[i]!;
+    if (id >= 0 && sizes[id]! >= floor) out[i] = 1;
+  }
+  return out;
 }
 
 /**
@@ -133,9 +219,21 @@ export async function removeBackground(input: Buffer): Promise<Buffer | null> {
     if (y < h - 1) push(x, y + 1, p);
   }
 
+  // Limpieza de la máscara antes de pintar el alfa:
+  //  - cierre: tapa las fugas finas por las que el fondo se cuela en el producto (el "mordisco")
+  //  - apertura: borra motitas sueltas de fondo que quedaron marcadas como producto
+  //  - componentes: deja solo las piezas grandes, así desaparecen astillas y puntitos aislados
+  let fg: Uint8Array<ArrayBuffer> = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) fg[i] = bg[i] ? 0 : 1;
+  fg = morph(fg, w, h, CLOSE, true);
+  fg = morph(fg, w, h, CLOSE, false);
+  fg = morph(fg, w, h, OPEN, false);
+  fg = morph(fg, w, h, OPEN, true);
+  fg = keepLargeBlobs(fg, w, h);
+
   // Alfa con el borde suavizado
   const alpha = new Uint8Array(w * h);
-  for (let i = 0; i < w * h; i++) alpha[i] = bg[i] ? 0 : 255;
+  for (let i = 0; i < w * h; i++) alpha[i] = fg[i] ? 255 : 0;
   for (let pass = 0; pass < FEATHER; pass++) {
     const prev = Uint8Array.from(alpha);
     for (let y = 0; y < h; y++) {
