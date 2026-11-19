@@ -40,7 +40,7 @@ const COLUMNS: { title: string; links: { to: string; label: string }[] }[] = [
 
 export default function Footer() {
   return (
-    <footer className="mt-28 bg-ink text-white/65">
+    <footer className="bg-ink text-white/65">
       <div className="wrap grid grid-cols-2 gap-x-6 gap-y-10 py-14 sm:py-16 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] md:gap-10">
         <div className="col-span-2 md:col-span-1">
           <Logo variant="stacked" className="h-24" />

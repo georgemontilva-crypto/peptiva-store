@@ -53,9 +53,19 @@ img { border-radius: 1rem; }
 /* Tarjeta base */
 .card { background: #fff; border: 1px solid var(--color-line); border-radius: 1.5rem; }
 
-/* Panel degradado de la referencia */
+/* Paneles y bandas de color a todo el ancho */
 .panel-soft { background: linear-gradient(180deg, rgb(232 229 255 / .6) 0%, rgb(203 229 252 / .6) 100%); }
 .panel-ice { background: linear-gradient(180deg, #f7f8fc 0%, #eef4fb 100%); }
+.band-lilac { background: linear-gradient(180deg, #f3f1ff 0%, #eef5fd 100%); }
+.band-mint { background: linear-gradient(180deg, #eefaf3 0%, #f4fbf7 100%); }
+.band-pastel { background: linear-gradient(140deg, #fbfbe9 0%, #effaf0 38%, #e8f2fd 100%); }
+.band-ice { background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%); }
+
+/* Palabra en serif dentro de un titular, como en la referencia */
+.serif { font-family: "Instrument Serif", Georgia, "Times New Roman", serif; font-weight: 400; letter-spacing: 0; }
+
+/* Píldora de etiqueta sobre los titulares centrados */
+.chip { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .4rem 1rem; font-size: .82rem; font-weight: 500; }
 
 /* Campos */
 .field { display: block; width: 100%; border: 1px solid #d6dae3; border-radius: .9rem; padding: .8rem 1rem; font-size: .95rem; background: #fff; color: var(--color-ink); }
