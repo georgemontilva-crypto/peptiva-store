@@ -31,47 +31,88 @@ function Arrow({ className = "" }: { className?: string }) {
 /* Iconos de línea, al estilo de las ilustraciones de la referencia */
 const ico = { fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
+/** Gradilla con dos tubos, vista en perspectiva. */
 const IconRack = (p: { className?: string }) => (
   <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
-    <path d="M10 18h44M14 18v26a6 6 0 0 0 6 6h0a6 6 0 0 0 6-6V18M38 18v26a6 6 0 0 0 6 6h0a6 6 0 0 0 6-6V18" />
-    <path d="M14 34h12M38 30h12M8 56h48" />
+    <path d="M17 28.6V8M26 27.4V6.8" />
+    <ellipse cx="21.5" cy="7.4" rx="4.5" ry="1.9" />
+    <path d="M17 31.4v8.4a4.5 4.5 0 0 0 9 0v-8.8" />
+    <path d="M33.6 25.6V5.2M42.6 24.4V4" />
+    <ellipse cx="38.1" cy="4.6" rx="4.5" ry="1.9" />
+    <path d="M33.6 28.4v7.4a4.5 4.5 0 0 0 9 0v-7.8" />
+    <path d="M7 27.6 39 21.2l18 7.1L25 34.7z" />
+    <ellipse cx="21.5" cy="30" rx="4.6" ry="1.9" />
+    <ellipse cx="38.1" cy="26.7" rx="4.6" ry="1.9" />
+    <path d="M7 27.6v17.6M25 34.7v17.6M57 28.3v17.6M39 21.2v17.6" />
+    <path d="M7 45.2 39 38.8l18 7.1L25 52.3z" />
   </svg>
 );
+/** Pipeta sobre placa de Petri. */
 const IconPipette = (p: { className?: string }) => (
   <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
-    <path d="M44 10l10 10-26 26-10-10z" />
-    <path d="M18 36l-6 12 12-6" />
-    <ellipse cx="34" cy="52" rx="20" ry="7" />
+    <ellipse cx="34" cy="45" rx="21" ry="7.5" />
+    <path d="M13 45v4.5M55 45v4.5" />
+    <path d="M13 49.5a21 7.5 0 0 0 42 0" />
+    <circle cx="16" cy="12" r="5.6" />
+    <path d="M19.7 16.2 36.5 33M12.9 18.2 29.7 35" />
+    <path d="m36.5 33-6.8 2 2-6.8z" />
   </svg>
 );
+/** Lupa con burbujas y mango rayado. */
 const IconLens = (p: { className?: string }) => (
   <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
-    <circle cx="28" cy="28" r="16" />
-    <path d="M40 40l14 14M22 28h12M28 22v12" />
+    <circle cx="25" cy="25" r="15" />
+    <circle cx="25" cy="25" r="12" />
+    <circle cx="21" cy="22" r="3.6" />
+    <circle cx="28.5" cy="28" r="2.2" />
+    <path d="M35.6 35.6 56 56M38.8 32.4 59.2 52.8" />
+    <path d="m39.5 40.5 4-4M44 45l4-4M48.5 49.5l4-4" />
   </svg>
 );
+/** Cronómetro con líneas de velocidad. */
 const IconTimer = (p: { className?: string }) => (
   <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
-    <circle cx="32" cy="36" r="18" />
-    <path d="M32 26v10l7 5M26 10h12M50 20l4-4" />
+    <circle cx="38" cy="34" r="17" />
+    <circle cx="38" cy="34" r="2" />
+    <path d="M38 34 27 25M38 34h11" />
+    <path d="M33 11.5h10l1 6.5H32z" />
+    <path d="M4 22h18M10 30h12M4 38h16M14 46h10" />
   </svg>
 );
+/** Camión de reparto con líneas de movimiento. */
 const IconTruck = (p: { className?: string }) => (
   <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
-    <path d="M4 20h30v24H4zM34 28h12l8 8v8H34z" />
-    <circle cx="16" cy="48" r="4" />
-    <circle cx="44" cy="48" r="4" />
-    <path d="M2 28h10M0 36h12" />
+    <path d="M14 20.5 44 16v24l-30 4z" />
+    <path d="M44 24h7l8 9v7h-15z" />
+    <circle cx="23" cy="46" r="4.2" />
+    <circle cx="36" cy="45" r="4.2" />
+    <circle cx="52" cy="43.5" r="4.2" />
+    <path d="M23 46h.01M36 45h.01M52 43.5h.01" />
+    <path d="M2 19h10M16 16h4M2 26h14M4 32h8" />
+  </svg>
+);
+/** Molécula: núcleo con cuatro enlaces. */
+const IconMolecule = (p: { className?: string }) => (
+  <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
+    <circle cx="32" cy="32" r="8.5" />
+    <circle cx="12" cy="13" r="5" />
+    <circle cx="55" cy="26" r="4.5" />
+    <circle cx="50" cy="50" r="4.5" />
+    <circle cx="20" cy="52" r="4.5" />
+    <path d="M16.6 17.1 26.4 26M14.4 19.4 24.2 28.3" />
+    <path d="M40.3 29.6 50.5 27M40.8 32.8 51 30.2" />
+    <path d="m37.6 38.6 8.6 7.6M35.4 41.1l8.6 7.6" />
+    <path d="m26.6 38.8-4.8 8.6M23.8 37.2 19 45.8" />
   </svg>
 );
 const IconShield = (p: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={p.className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg viewBox="0 0 24 24" className={p.className} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
     <path d="M12 3l7 3v5.5c0 4.2-2.9 7.7-7 9.5-4.1-1.8-7-5.3-7-9.5V6z" />
     <path d="M9 12l2 2 4-4" />
   </svg>
 );
 const IconDoc = (p: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={p.className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+  <svg viewBox="0 0 24 24" className={p.className} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
     <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
     <path d="M14 3v5h5M9 13h6M9 17h4" />
   </svg>
@@ -138,7 +179,7 @@ const QUALITY_TABS = [
   },
   {
     key: "Identity",
-    Icon: IconLens,
+    Icon: IconMolecule,
     title: "Confirmed identity",
     method: "Mass spectrometry",
     body: "The molecular weight of every lot is confirmed against the expected mass for the sequence, so the vial contains the compound the label states and not a close analogue.",
