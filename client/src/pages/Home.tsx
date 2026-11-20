@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { usePageMeta, useJsonLd, SITE_URL, formatPrice } from "../lib/format";
-import { HERO_VIALS, cutUrl } from "../lib/site";
+import { HERO_VIALS, DECOR_VIALS, vialFor } from "../lib/site";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import NewsletterForm from "../components/NewsletterForm";
 
@@ -95,9 +95,11 @@ export default function Home() {
   const [tab, setTab] = useState(0);
 
   const featured = products?.slice(0, 8);
-  const shot = (i: number) => products?.[i]?.imageUrl ?? HERO_VIALS[i % HERO_VIALS.length]!;
-  /** La misma foto sin fondo, para que el frasco flote sobre el degradado. */
-  const cut = (i: number) => cutUrl(shot(i));
+  /**
+   * Frasco recortado para la composición número i. Si el catálogo ya cargó se usa el del producto
+   * destacado correspondiente; si no, uno fijo, para que la portada se vea igual desde el primer pintado.
+   */
+  const cut = (i: number) => (products?.[i] ? vialFor(products[i]!.slug, i) : (DECOR_VIALS[i % DECOR_VIALS.length] ?? HERO_VIALS[0]!));
 
   useJsonLd(
     "home-items",
@@ -158,9 +160,9 @@ export default function Home() {
               className="relative order-1 h-[280px] w-full sm:h-[360px] lg:absolute lg:inset-y-0 lg:left-1/2 lg:right-0 lg:order-2 lg:h-full lg:w-1/2"
               aria-hidden
             >
-              <img src={cut(0)} alt="" className="vial float-shadow absolute bottom-[-8%] left-[-2%] h-[74%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
-              <img src={cut(1)} alt="" className="vial float-shadow absolute bottom-[-6%] left-[28%] z-10 h-[92%] w-auto max-w-none rotate-[3deg] rounded-none object-contain" style={{ animationDelay: "-2s" }} />
-              <img src={cut(2)} alt="" className="vial float-shadow absolute bottom-[4%] right-[-2%] h-[56%] w-auto max-w-none rotate-[12deg] rounded-none object-contain" style={{ animationDelay: "-4s" }} />
+              <img src={HERO_VIALS[0]} alt="" className="vial float-shadow absolute bottom-[-8%] left-[-2%] h-[64%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
+              <img src={HERO_VIALS[1]} alt="" className="vial float-shadow absolute bottom-[-6%] left-[28%] z-10 h-[84%] w-auto max-w-none rotate-[3deg] rounded-none object-contain" style={{ animationDelay: "-2s" }} />
+              <img src={HERO_VIALS[2]} alt="" className="vial float-shadow absolute bottom-[4%] right-[-2%] h-[52%] w-auto max-w-none rotate-[12deg] rounded-none object-contain" style={{ animationDelay: "-4s" }} />
             </div>
           </div>
         </div>

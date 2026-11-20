@@ -1,15 +1,72 @@
-export const HERO_VIALS = [
-  "/media/wp/2026/08/ps1.png",
-  "/media/wp/2026/08/ps2.png",
-  "/media/wp/2026/08/ps3.png",
-];
+/**
+ * Frascos recortados sobre fondo transparente, listos para las composiciones que flotan sobre los
+ * degradados. Son archivos del proyecto: se recortaron una vez a partir de las fotos de estudio, así
+ * que no dependen de ningún proceso en tiempo real ni de que el recorte automático acierte.
+ */
+export const VIALS = {
+  "bacteriostatic-water": "/vials/bacteriostatic-water.webp",
+  "bpc-157-tb-500": "/vials/bpc-157-tb-500.webp",
+  "bpc-157": "/vials/bpc-157.webp",
+  "cjc-1295-ipamorelin": "/vials/cjc-1295-ipamorelin.webp",
+  epithalon: "/vials/epithalon.webp",
+  "ghk-cu": "/vials/ghk-cu.webp",
+  glow: "/vials/glow.webp",
+  ipamorelin: "/vials/ipamorelin.webp",
+  kpv: "/vials/kpv.webp",
+  "mots-c": "/vials/mots-c.webp",
+  "mt-1": "/vials/mt-1.webp",
+  "mt-2": "/vials/mt-2.webp",
+  nad: "/vials/nad.webp",
+  selank: "/vials/selank.webp",
+  semax: "/vials/semax.webp",
+  tb500: "/vials/tb500.webp",
+  tesamorelin: "/vials/tesamorelin.webp",
+} as const;
+
+/** Los tres del hero, en orden: izquierda, centro (el grande) y derecha. */
+export const HERO_VIALS = [VIALS["bpc-157"], VIALS.tb500, VIALS["mots-c"]];
+
+/** Frascos para las demás composiciones de la portada. */
+export const DECOR_VIALS = [VIALS["ghk-cu"], VIALS.nad, VIALS.semax, VIALS.selank, VIALS.kpv, VIALS.glow];
 
 /**
- * Misma imagen, servida con el fondo recortado (PNG transparente) para las composiciones flotantes.
- * Si la foto no viene del proxy de medios se devuelve tal cual.
+ * Alias de cada frasco. Se buscan de más largo a más corto para que "bpc-157-tb-500" no se confunda
+ * con "bpc-157".
  */
-export const cutUrl = (url: string | null | undefined): string =>
-  url && url.startsWith("/media/wp/") ? url.replace("/media/wp/", "/media/cut/") : (url ?? "");
+const VIAL_ALIASES: [string, string][] = [
+  ["bpc157tb500", VIALS["bpc-157-tb-500"]],
+  ["bpc157tb", VIALS["bpc-157-tb-500"]],
+  ["cjc1295ipamorelin", VIALS["cjc-1295-ipamorelin"]],
+  ["bacteriostatic", VIALS["bacteriostatic-water"]],
+  ["tesamorelin", VIALS.tesamorelin],
+  ["ipamorelin", VIALS.ipamorelin],
+  ["epithalon", VIALS.epithalon],
+  ["melanotan1", VIALS["mt-1"]],
+  ["melanotan2", VIALS["mt-2"]],
+  ["cjc1295", VIALS["cjc-1295-ipamorelin"]],
+  ["bpc157", VIALS["bpc-157"]],
+  ["selank", VIALS.selank],
+  ["ghkcu", VIALS["ghk-cu"]],
+  ["motsc", VIALS["mots-c"]],
+  ["tb500", VIALS.tb500],
+  ["semax", VIALS.semax],
+  ["glow", VIALS.glow],
+  ["mots", VIALS["mots-c"]],
+  ["nad", VIALS.nad],
+  ["kpv", VIALS.kpv],
+  ["mt1", VIALS["mt-1"]],
+  ["mt2", VIALS["mt-2"]],
+];
+
+/** Devuelve el frasco recortado que corresponde a un producto, o uno por defecto si no hay. */
+export function vialFor(slug: string | null | undefined, fallbackIndex = 0): string {
+  const key = (slug ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (key) {
+    const hit = VIAL_ALIASES.find(([alias]) => key.includes(alias));
+    if (hit) return hit[1];
+  }
+  return DECOR_VIALS[fallbackIndex % DECOR_VIALS.length]!;
+}
 
 export const SUPPORT_EMAIL = "support@peptivasupplies.com";
 
