@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { usePageMeta, useJsonLd, SITE_URL, formatPrice } from "../lib/format";
-import { HERO_VIALS, DECOR_VIALS, vialFor } from "../lib/site";
+import { HERO_VIALS, DECOR_VIALS, VIALS, vialFor } from "../lib/site";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import NewsletterForm from "../components/NewsletterForm";
 
@@ -28,61 +28,190 @@ function Arrow({ className = "" }: { className?: string }) {
   );
 }
 
+/* Iconos de línea, al estilo de las ilustraciones de la referencia */
+const ico = { fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+
+const IconRack = (p: { className?: string }) => (
+  <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
+    <path d="M10 18h44M14 18v26a6 6 0 0 0 6 6h0a6 6 0 0 0 6-6V18M38 18v26a6 6 0 0 0 6 6h0a6 6 0 0 0 6-6V18" />
+    <path d="M14 34h12M38 30h12M8 56h48" />
+  </svg>
+);
+const IconPipette = (p: { className?: string }) => (
+  <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
+    <path d="M44 10l10 10-26 26-10-10z" />
+    <path d="M18 36l-6 12 12-6" />
+    <ellipse cx="34" cy="52" rx="20" ry="7" />
+  </svg>
+);
+const IconLens = (p: { className?: string }) => (
+  <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
+    <circle cx="28" cy="28" r="16" />
+    <path d="M40 40l14 14M22 28h12M28 22v12" />
+  </svg>
+);
+const IconTimer = (p: { className?: string }) => (
+  <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
+    <circle cx="32" cy="36" r="18" />
+    <path d="M32 26v10l7 5M26 10h12M50 20l4-4" />
+  </svg>
+);
+const IconTruck = (p: { className?: string }) => (
+  <svg viewBox="0 0 64 64" className={p.className} {...ico} aria-hidden>
+    <path d="M4 20h30v24H4zM34 28h12l8 8v8H34z" />
+    <circle cx="16" cy="48" r="4" />
+    <circle cx="44" cy="48" r="4" />
+    <path d="M2 28h10M0 36h12" />
+  </svg>
+);
+const IconShield = (p: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={p.className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 3l7 3v5.5c0 4.2-2.9 7.7-7 9.5-4.1-1.8-7-5.3-7-9.5V6z" />
+    <path d="M9 12l2 2 4-4" />
+  </svg>
+);
+const IconDoc = (p: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={p.className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+    <path d="M14 3v5h5M9 13h6M9 17h4" />
+  </svg>
+);
+
 const GUARANTEE = [
-  { edge: "bg-teal", title: "99%+ purity guaranteed", sub: "Every lot assayed by HPLC before release" },
-  { edge: "bg-navy", title: "A COA with every lot", sub: "Published on the site, not sent on request" },
-  { edge: "bg-amber-300", title: "Free U.S. shipping", sub: "Dispatched same or next business day" },
+  {
+    edge: "bg-teal",
+    chip: "bg-teal-soft text-navy",
+    Icon: IconShield,
+    title: "99%+ purity guaranteed",
+    sub: "Every lot assayed by HPLC before release",
+  },
+  {
+    edge: "bg-navy",
+    chip: "bg-sky text-navy",
+    Icon: IconDoc,
+    title: "A COA with every lot",
+    sub: "Published on the site, not sent on request",
+  },
+  {
+    edge: "bg-amber-300",
+    chip: "bg-amber-100 text-amber-700",
+    Icon: IconTruck,
+    title: "Free U.S. shipping",
+    sub: "Dispatched same or next business day",
+  },
 ];
 
 const PROCUREMENT = [
   {
-    title: "Documentation with every order",
+    title: "Documentation with every lot",
     body: "Each product page links the current Certificate of Analysis, with the lot number, the identity confirmation and the purity result on the same page as the price.",
     cta: { to: "/coas", label: "Browse the certificates" },
+    Icon: IconRack,
   },
   {
     title: "Research-grade material at catalog pricing",
     body: "A United States supplier with list prices set for research budgets, and bundle pricing that lowers the unit cost from the second vial onward.",
     cta: { to: "/shop", label: "See the catalog" },
+    Icon: IconPipette,
   },
   {
     title: "Support that answers specifications",
     body: "Questions about purity results, reconstitution, storage or bulk quantities are answered by email within one business day.",
     cta: { to: "/contact", label: "Contact support" },
+    Icon: IconLens,
   },
   {
     title: "Shipped and tracked across the U.S.",
     body: "Insulated packaging with cold packs, tracking on every order, and an order-tracking page where the status is available at any time.",
     cta: { to: "/track-order", label: "Track an order" },
+    Icon: IconTimer,
   },
 ];
 
 const QUALITY_TABS = [
   {
     key: "Purity",
+    Icon: IconShield,
     title: "Chromatographic purity",
     method: "HPLC analysis",
     body: "Each lot is run by high-performance liquid chromatography and released only at 99% or above. The reported purity is part of the Certificate of Analysis for that lot.",
   },
   {
     key: "Identity",
+    Icon: IconLens,
     title: "Confirmed identity",
     method: "Mass spectrometry",
     body: "The molecular weight of every lot is confirmed against the expected mass for the sequence, so the vial contains the compound the label states and not a close analogue.",
   },
   {
     key: "Documentation",
+    Icon: IconDoc,
     title: "Traceable by lot number",
     method: "Certificate of Analysis",
     body: "Results are tied to the lot number printed on your vial, and every certificate stays published, so a result can be retrieved months after the order.",
   },
   {
     key: "Handling",
+    Icon: IconTimer,
     title: "Stable on arrival",
     method: "Lyophilized & sealed",
     body: "Material ships lyophilized in sealed vials with cold packs and insulated packaging, ready to be stored sealed and protected from light.",
   },
 ];
+
+/**
+ * Frascos sueltos de fondo. Las posiciones están escritas a mano para que la nube quede repartida y
+ * salga siempre igual; los de atrás van más pequeños, más claros y desenfocados para dar profundidad.
+ */
+const SCATTER: { top: string; left: string; size: number; rot: number; dim: number; blur: number }[] = [
+  { top: "2%", left: "3%", size: 76, rot: -18, dim: 0.5, blur: 1.5 },
+  { top: "0%", left: "13%", size: 58, rot: 22, dim: 0.35, blur: 2 },
+  { top: "9%", left: "23%", size: 92, rot: -8, dim: 0.75, blur: 0 },
+  { top: "-2%", left: "35%", size: 48, rot: 14, dim: 0.3, blur: 2.5 },
+  { top: "6%", left: "62%", size: 70, rot: 26, dim: 0.5, blur: 1.5 },
+  { top: "1%", left: "73%", size: 100, rot: -14, dim: 0.8, blur: 0 },
+  { top: "4%", left: "86%", size: 62, rot: 10, dim: 0.45, blur: 2 },
+  { top: "10%", left: "95%", size: 80, rot: -24, dim: 0.6, blur: 1 },
+  { top: "28%", left: "1%", size: 64, rot: 12, dim: 0.4, blur: 2 },
+  { top: "22%", left: "14%", size: 54, rot: -20, dim: 0.35, blur: 2.5 },
+  { top: "34%", left: "88%", size: 58, rot: 18, dim: 0.4, blur: 2 },
+  { top: "26%", left: "96%", size: 74, rot: -10, dim: 0.55, blur: 1 },
+  { top: "52%", left: "4%", size: 96, rot: 20, dim: 0.75, blur: 0 },
+  { top: "60%", left: "16%", size: 52, rot: -16, dim: 0.3, blur: 2.5 },
+  { top: "56%", left: "84%", size: 88, rot: -22, dim: 0.7, blur: 0.5 },
+  { top: "66%", left: "94%", size: 56, rot: 16, dim: 0.35, blur: 2 },
+  { top: "80%", left: "2%", size: 60, rot: -12, dim: 0.4, blur: 2 },
+  { top: "86%", left: "12%", size: 84, rot: 24, dim: 0.65, blur: 0.5 },
+  { top: "90%", left: "30%", size: 54, rot: -18, dim: 0.3, blur: 2.5 },
+  { top: "84%", left: "68%", size: 68, rot: 14, dim: 0.45, blur: 1.5 },
+  { top: "92%", left: "80%", size: 92, rot: -8, dim: 0.7, blur: 0 },
+  { top: "76%", left: "92%", size: 50, rot: 20, dim: 0.3, blur: 2.5 },
+];
+
+const ALL_VIALS = Object.values(VIALS);
+
+function ScatterVials() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {SCATTER.map((s, i) => (
+        <img
+          key={i}
+          src={ALL_VIALS[i % ALL_VIALS.length]}
+          alt=""
+          className="absolute rounded-none object-contain"
+          style={{
+            top: s.top,
+            left: s.left,
+            width: s.size * 0.82,
+            transform: `translate(-50%, -50%) rotate(${s.rot}deg)`,
+            opacity: s.dim * 0.85,
+            filter: s.blur ? `blur(${s.blur}px)` : undefined,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function Home() {
   usePageMeta(
@@ -95,10 +224,7 @@ export default function Home() {
   const [tab, setTab] = useState(0);
 
   const featured = products?.slice(0, 8);
-  /**
-   * Frasco recortado para la composición número i. Si el catálogo ya cargó se usa el del producto
-   * destacado correspondiente; si no, uno fijo, para que la portada se vea igual desde el primer pintado.
-   */
+  /** Frasco recortado para la composición número i: el del producto destacado si el catálogo ya cargó. */
   const cut = (i: number) => (products?.[i] ? vialFor(products[i]!.slug, i) : (DECOR_VIALS[i % DECOR_VIALS.length] ?? HERO_VIALS[0]!));
 
   useJsonLd(
@@ -128,6 +254,8 @@ export default function Home() {
         }
       : null,
   );
+
+  const active = QUALITY_TABS[tab]!;
 
   return (
     <>
@@ -160,7 +288,7 @@ export default function Home() {
               className="relative order-1 h-[280px] w-full sm:h-[360px] lg:absolute lg:inset-y-0 lg:left-1/2 lg:right-0 lg:order-2 lg:h-full lg:w-1/2"
               aria-hidden
             >
-              <img src={HERO_VIALS[0]} alt="" className="vial float-shadow absolute bottom-[-8%] left-[-2%] h-[64%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
+              <img src={HERO_VIALS[0]} alt="" className="vial float-shadow absolute bottom-[-8%] left-[2%] h-[64%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
               <img src={HERO_VIALS[1]} alt="" className="vial float-shadow absolute bottom-[-6%] left-[28%] z-10 h-[84%] w-auto max-w-none rotate-[3deg] rounded-none object-contain" style={{ animationDelay: "-2s" }} />
               <img src={HERO_VIALS[2]} alt="" className="vial float-shadow absolute bottom-[4%] right-[-2%] h-[52%] w-auto max-w-none rotate-[12deg] rounded-none object-contain" style={{ animationDelay: "-4s" }} />
             </div>
@@ -180,29 +308,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===================== GARANTÍA ===================== */}
-      <section className="band-lilac" data-reveal>
-        <div className="wrap grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-24">
-          <div className="relative mx-auto hidden h-[420px] w-full max-w-md lg:block" aria-hidden>
-            <img src={cut(3)} alt="" className="vial float-shadow absolute inset-0 mx-auto h-full w-auto max-w-none rounded-none object-contain" />
-            <div className="absolute -right-2 bottom-10 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-20px_rgba(12,42,71,0.4)]">
-              <p className="text-sm font-semibold">99%+ purity</p>
-              <p className="text-xs font-light text-slate">Verified by HPLC</p>
-            </div>
+      {/* ===================== GARANTÍA (panel partido a sangre) ===================== */}
+      <section data-reveal className="grid lg:grid-cols-2">
+        <div className="band-lilac relative flex min-h-[320px] items-center justify-center overflow-hidden p-10 lg:min-h-[520px]" aria-hidden>
+          <img src={cut(3)} alt="" className="vial float-shadow h-[260px] w-auto max-w-none rotate-[-10deg] rounded-none object-contain lg:h-[400px]" />
+          <div className="absolute bottom-10 right-6 rounded-2xl bg-white/90 p-4 shadow-[0_20px_40px_-22px_rgba(12,42,71,0.45)] backdrop-blur lg:right-12">
+            <p className="text-sm font-semibold">99%+ purity</p>
+            <p className="text-xs font-light text-slate">Verified by HPLC</p>
           </div>
+        </div>
 
-          <div>
-            <h2 className="text-3xl font-semibold sm:text-[2.7rem]">The Peptiva supply guarantee</h2>
-            <p className="mt-4 max-w-md text-lg font-light leading-relaxed text-slate">
+        <div className="flex items-center bg-white px-5 py-16 lg:px-14 lg:py-20">
+          <div className="w-full max-w-xl">
+            <h2 className="text-3xl font-semibold sm:text-[2.6rem]">The Peptiva supply guarantee</h2>
+            <p className="mt-4 text-lg font-light leading-relaxed text-slate">
               Three things every order carries, whether it is one vial or a full bundle.
             </p>
-            <ul className="mt-8 space-y-4">
+            <ul className="mt-8 space-y-3">
               {GUARANTEE.map((g) => (
-                <li key={g.title} className="flex overflow-hidden rounded-2xl bg-white shadow-[0_18px_40px_-28px_rgba(12,42,71,0.5)]">
+                <li key={g.title} className="flex overflow-hidden rounded-2xl bg-mist">
                   <span className={`w-1.5 shrink-0 ${g.edge}`} aria-hidden />
-                  <div className="px-6 py-5">
-                    <p className="text-[1.05rem] font-semibold">{g.title}</p>
-                    <p className="mt-1 text-sm font-light text-slate">{g.sub}</p>
+                  <div className="flex items-center gap-4 px-5 py-4">
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${g.chip}`} aria-hidden>
+                      <g.Icon className="h-5 w-5" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold">{g.title}</span>
+                      <span className="block text-sm font-light text-slate">{g.sub}</span>
+                    </span>
                   </div>
                 </li>
               ))}
@@ -212,8 +345,9 @@ export default function Home() {
       </section>
 
       {/* ===================== PRECIO POR CANTIDAD ===================== */}
-      <section className="band-pastel" data-reveal>
-        <div className="wrap py-20 text-center lg:py-28">
+      <section className="band-pastel relative overflow-hidden" data-reveal>
+        <ScatterVials />
+        <div className="wrap relative py-20 text-center lg:py-28">
           <span className="chip bg-white/80 text-navy">
             <span className="h-1.5 w-1.5 rounded-full bg-teal" aria-hidden />
             Bundle pricing
@@ -232,8 +366,8 @@ export default function Home() {
           </ul>
 
           <div className="mx-auto mt-10 flex max-w-xl items-center gap-5 rounded-[1.75rem] bg-white p-5 text-left shadow-[0_28px_60px_-35px_rgba(12,42,71,0.55)]">
-            <div className="relative shrink-0">
-              <img src={cut(0)} alt="" className="float-shadow-sm h-20 w-20 rounded-none object-contain" />
+            <div className="relative shrink-0 rounded-2xl bg-mist p-2">
+              <img src={cut(0)} alt="" className="h-20 w-16 rounded-none object-contain" />
               <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-ink px-2 py-0.5 text-[0.65rem] font-semibold text-white">×3</span>
             </div>
             <div className="min-w-0 flex-1">
@@ -262,16 +396,23 @@ export default function Home() {
         <div className="wrap py-20 lg:py-28">
           <h2 className="text-center text-[2.1rem] font-semibold sm:text-[2.9rem]">Built for laboratory procurement</h2>
           <div className="mt-12 grid gap-6 lg:grid-cols-2">
-            {PROCUREMENT.map((p, i) => (
-              <article key={p.title} className="flex items-start gap-5 rounded-[1.75rem] bg-white p-7 shadow-[0_24px_50px_-35px_rgba(12,42,71,0.5)]">
+            {PROCUREMENT.map((p) => (
+              <article key={p.title} className="flex items-start gap-5 rounded-[1.75rem] bg-white p-7 shadow-[0_24px_50px_-38px_rgba(12,42,71,0.5)]">
                 <div className="min-w-0 flex-1">
                   <h3 className="text-xl font-semibold leading-snug">{p.title}</h3>
                   <p className="mt-3 text-[0.95rem] font-light leading-relaxed text-slate">{p.body}</p>
                   <Link to={p.cta.to} className="btn btn-ghost mt-5 text-sm">{p.cta.label}</Link>
                 </div>
-                <img src={cut(i)} alt="" className="float-shadow-sm hidden h-28 w-28 shrink-0 rounded-none object-contain sm:block" aria-hidden />
+                <p.Icon className="hidden h-20 w-20 shrink-0 text-muted sm:block" />
               </article>
             ))}
+            <article className="flex items-center justify-between gap-6 rounded-[1.75rem] bg-white p-7 shadow-[0_24px_50px_-38px_rgba(12,42,71,0.5)] lg:col-span-2">
+              <h3 className="text-xl font-semibold">Free U.S. shipping on every order, no minimum</h3>
+              <div className="flex shrink-0 items-center gap-5">
+                <Link to="/shipping-policy" className="btn btn-ghost text-sm">Read the shipping policy</Link>
+                <IconTruck className="hidden h-16 w-16 text-muted sm:block" />
+              </div>
+            </article>
           </div>
         </div>
       </section>
@@ -296,19 +437,23 @@ export default function Home() {
                   aria-selected={tab === i}
                   aria-controls={`qpanel-${i}`}
                   onClick={() => setTab(i)}
-                  className={`rounded-full px-4 py-2 text-sm transition-colors ${tab === i ? "bg-ink font-medium text-white" : "bg-mist text-slate hover:bg-line"}`}
+                  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors ${tab === i ? "bg-ink font-medium text-white" : "bg-mist text-slate hover:bg-line"}`}
                 >
+                  <t.Icon className="h-4 w-4" />
                   {t.key}
                 </button>
               ))}
             </div>
 
-            <div role="tabpanel" id={`qpanel-${tab}`} aria-labelledby={`qtab-${tab}`} className="mt-6 rounded-[1.5rem] bg-ice p-7">
+            <div role="tabpanel" id={`qpanel-${tab}`} aria-labelledby={`qtab-${tab}`} className="mt-6 rounded-[1.5rem] border border-line bg-mist p-7">
               <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-xl font-semibold">{QUALITY_TABS[tab]!.title}</h3>
-                <span className="chip bg-white text-navy">{QUALITY_TABS[tab]!.method}</span>
+                <h3 className="text-xl font-semibold">{active.title}</h3>
+                <span className="chip bg-white text-navy">
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal" aria-hidden />
+                  {active.method}
+                </span>
               </div>
-              <p className="mt-3 text-[0.95rem] font-light leading-relaxed text-slate">{QUALITY_TABS[tab]!.body}</p>
+              <p className="mt-3 text-[0.95rem] font-light leading-relaxed text-slate">{active.body}</p>
             </div>
 
             <Link to="/shop" className="btn btn-primary mt-8">
@@ -316,31 +461,38 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Panel con el frasco y tarjetas flotantes */}
+          {/* Panel con el frasco inclinado y tarjetas flotantes */}
           <div className="relative">
-            <div className="panel-ice relative overflow-hidden rounded-[2.5rem] p-10">
+            <div className="panel-ice relative overflow-hidden rounded-[2.5rem] px-10 pb-28 pt-14">
               <div className="lab-grid absolute inset-0 opacity-60" aria-hidden />
-              <img src={cut(4)} alt="" className="vial float-shadow relative mx-auto h-[360px] w-auto max-w-full rounded-none object-contain" aria-hidden />
+              <img src={cut(4)} alt="" className="vial float-shadow relative mx-auto h-[300px] w-auto max-w-full rotate-[-12deg] rounded-none object-contain lg:h-[360px]" aria-hidden />
               <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-full" aria-hidden />
             </div>
-            <div className="absolute right-4 top-6 rounded-2xl bg-white p-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)]">
-              <p className="flex items-center gap-2 text-sm font-semibold">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-soft text-[0.7rem] text-navy" aria-hidden>✓</span>
-                99%+ purity
-              </p>
-              <p className="mt-0.5 text-xs font-light text-slate">Verified by HPLC</p>
+            <div className="absolute right-4 top-6 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-soft text-navy" aria-hidden>
+                <IconShield className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold">99%+ purity</span>
+                <span className="block text-xs font-light text-slate">Verified by HPLC</span>
+              </span>
             </div>
             <Link
               to="/coas"
-              className="absolute inset-x-6 bottom-5 flex items-center justify-between gap-4 rounded-2xl bg-white px-5 py-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)] transition-transform hover:-translate-y-0.5"
+              className="absolute inset-x-6 bottom-6 flex items-center gap-4 rounded-2xl bg-white px-5 py-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)] transition-transform hover:-translate-y-0.5"
             >
-              <span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mist text-navy" aria-hidden>
+                <IconDoc className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold">See the certificates</span>
-                <span className="block text-xs font-light text-slate">
+                <span className="block truncate text-xs font-light text-slate">
                   {coas.data ? `${coas.data.length} lots published` : "Certificate of Analysis by lot"}
                 </span>
               </span>
-              <Arrow className="text-ink" />
+              <svg viewBox="0 0 20 20" className="h-5 w-5 shrink-0 text-muted" fill="currentColor" aria-hidden>
+                <path d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z" />
+              </svg>
             </Link>
           </div>
         </div>
@@ -390,10 +542,19 @@ export default function Home() {
       ) : null}
 
       {/* ===================== CIERRE ===================== */}
-      <section className="band-lilac" data-reveal>
-        <div className="wrap py-20 text-center lg:py-28">
-          <h2 className="mx-auto max-w-4xl text-[2.2rem] font-semibold leading-[1.08] sm:text-[3.1rem]">
-            Research peptides for your lab, with the <span className="serif">documentation</span> your records expect.
+      <section className="band-pastel relative overflow-hidden" data-reveal>
+        {/* Frascos asomando por las esquinas, como en la referencia */}
+        <img src={cut(5)} alt="" className="vial pointer-events-none absolute -left-10 top-6 hidden h-44 w-auto max-w-none rotate-[18deg] rounded-none object-contain opacity-90 md:block" aria-hidden />
+        <img src={cut(2)} alt="" className="vial pointer-events-none absolute -right-8 bottom-24 hidden h-48 w-auto max-w-none rotate-[-14deg] rounded-none object-contain opacity-90 md:block" style={{ animationDelay: "-3s" }} aria-hidden />
+
+        <div className="wrap relative py-20 text-center lg:py-28">
+          <h2 className="mx-auto max-w-3xl text-[2.2rem] font-semibold leading-[1.1] sm:text-[3rem]">
+            Research peptides for your lab, with the{" "}
+            <span className="relative inline-block">
+              documentation
+              <span className="absolute inset-x-0 -bottom-1 h-[6px] rounded-full bg-teal/60" aria-hidden />
+            </span>{" "}
+            your records expect.
           </h2>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 min-[420px]:flex-row">
             <Link to="/shop" className="btn btn-primary">
@@ -402,12 +563,14 @@ export default function Home() {
             <Link to="/contact" className="btn btn-ghost">Talk to support</Link>
           </div>
 
-          <div className="mx-auto mt-16 max-w-xl rounded-[1.75rem] bg-white p-8 shadow-[0_28px_60px_-40px_rgba(12,42,71,0.5)]">
-            <h3 className="text-xl font-semibold">Restock and new-lot notices</h3>
-            <p className="mt-2 text-[0.95rem] font-light text-slate">
-              New compounds, restock alerts and new certificates. No more than twice a month.
-            </p>
-            <div className="mt-5 flex justify-center">
+          <div className="mx-auto mt-16 flex max-w-3xl flex-col items-center gap-6 rounded-[1.75rem] bg-lilac/70 p-8 text-left backdrop-blur sm:flex-row sm:justify-between">
+            <div>
+              <h3 className="text-xl font-semibold">Restock and new-lot notices</h3>
+              <p className="mt-1 text-[0.95rem] font-light text-slate">
+                New compounds, restock alerts and new certificates. No more than twice a month.
+              </p>
+            </div>
+            <div className="w-full shrink-0 sm:w-auto">
               <NewsletterForm />
             </div>
           </div>
