@@ -325,13 +325,15 @@ export default function Home() {
             </div>
 
             {/* En escritorio la composición ocupa toda la mitad derecha de la pantalla y se recorta en los bordes */}
+            {/* En teléfono los tres frascos van en fila, apoyados abajo y solapados, para que no queden
+                huecos; a partir de lg pasan a posiciones absolutas sobre la mitad derecha. */}
             <div
-              className="relative order-1 h-[280px] w-full sm:h-[360px] lg:absolute lg:inset-y-0 lg:left-1/2 lg:right-0 lg:order-2 lg:h-full lg:w-1/2"
+              className="relative order-1 flex h-[250px] w-full items-end justify-center pt-4 sm:h-[310px] lg:pt-0 lg:absolute lg:inset-y-0 lg:left-1/2 lg:right-0 lg:order-2 lg:block lg:h-full lg:w-1/2"
               aria-hidden
             >
-              <img src={HERO_VIALS[0]} alt="" className="vial float-shadow absolute bottom-[-8%] left-[2%] h-[64%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain" />
-              <img src={HERO_VIALS[1]} alt="" className="vial float-shadow absolute bottom-[-6%] left-[28%] z-10 h-[84%] w-auto max-w-none rotate-[3deg] rounded-none object-contain" style={{ animationDelay: "-2s" }} />
-              <img src={HERO_VIALS[2]} alt="" className="vial float-shadow absolute bottom-[4%] right-[-2%] h-[52%] w-auto max-w-none rotate-[12deg] rounded-none object-contain" style={{ animationDelay: "-4s" }} />
+              <img src={HERO_VIALS[0]} alt="" className="vial float-shadow -mr-5 h-[74%] w-auto max-w-none rotate-[-9deg] rounded-none object-contain lg:absolute lg:bottom-[-8%] lg:left-[2%] lg:mr-0 lg:h-[64%]" />
+              <img src={HERO_VIALS[1]} alt="" className="vial float-shadow z-10 h-[94%] w-auto max-w-none rotate-[3deg] rounded-none object-contain lg:absolute lg:bottom-[-6%] lg:left-[28%] lg:h-[84%]" style={{ animationDelay: "-2s" }} />
+              <img src={HERO_VIALS[2]} alt="" className="vial float-shadow -ml-5 h-[64%] w-auto max-w-none rotate-[12deg] rounded-none object-contain lg:absolute lg:bottom-[4%] lg:right-[-2%] lg:ml-0 lg:h-[52%]" style={{ animationDelay: "-4s" }} />
             </div>
           </div>
         </div>
@@ -447,7 +449,7 @@ export default function Home() {
                 <p.Icon className="hidden h-20 w-20 shrink-0 text-muted sm:block" />
               </article>
             ))}
-            <article className="flex items-center justify-between gap-6 rounded-[1.75rem] bg-white p-7 shadow-[0_24px_50px_-38px_rgba(12,42,71,0.5)] lg:col-span-2">
+            <article className="flex flex-col items-start gap-5 rounded-[1.75rem] bg-white p-7 shadow-[0_24px_50px_-38px_rgba(12,42,71,0.5)] sm:flex-row sm:items-center sm:justify-between sm:gap-6 lg:col-span-2">
               <h3 className="text-xl font-semibold">Free U.S. shipping on every order, no minimum</h3>
               <div className="flex shrink-0 items-center gap-5">
                 <Link to="/shipping-policy" className="btn btn-ghost text-sm">Read the shipping policy</Link>
