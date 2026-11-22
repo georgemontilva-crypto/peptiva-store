@@ -14,7 +14,7 @@ const SEALS = [
   "Lyophilized & sealed vials",
   "Ships same or next business day",
   "Cold-pack packaging",
-  "U.S. based support",
+  "U.S.-based support",
 ];
 
 function Arrow({ className = "" }: { className?: string }) {
@@ -137,8 +137,8 @@ const GUARANTEE = [
     edge: "bg-amber-300",
     chip: "bg-amber-100 text-amber-700",
     Icon: IconTruck,
-    title: "Free U.S. shipping",
-    sub: "Dispatched same or next business day",
+    title: "Free standard U.S. shipping",
+    sub: "Expedited rates are calculated at checkout",
   },
 ];
 
@@ -156,7 +156,7 @@ const PROCUREMENT = [
     Icon: IconPipette,
   },
   {
-    title: "Support that answers specifications",
+    title: "Support for product specifications",
     body: "Questions about purity results, reconstitution, storage or bulk quantities are answered by email within one business day.",
     cta: { to: "/contact", label: "Contact support" },
     Icon: IconLens,
@@ -351,14 +351,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===================== GARANTÍA (panel partido a sangre) ===================== */}
-      <section data-reveal className="grid lg:grid-cols-2">
-        <div className="band-lilac relative flex min-h-[320px] items-center justify-center overflow-hidden p-10 lg:min-h-[520px]" aria-hidden>
-          <img src={cut(3)} alt="" className="vial float-shadow h-[260px] w-auto max-w-none rotate-[-10deg] rounded-none object-contain lg:h-[400px]" />
-          <div className="absolute bottom-10 right-6 rounded-2xl bg-white/90 p-4 shadow-[0_20px_40px_-22px_rgba(12,42,71,0.45)] backdrop-blur lg:right-12">
-            <p className="text-sm font-semibold">99%+ purity</p>
-            <p className="text-xs font-light text-slate">Verified by HPLC</p>
+      {/* ===================== CATÁLOGO ===================== */}
+      <section className="band-ice" data-reveal>
+        <div className="wrap py-20 lg:py-24">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-[2.1rem] font-semibold sm:text-[2.9rem]">Most requested compounds</h2>
+              <p className="mt-3 text-lg font-light text-slate">Each one ships with the certificate for its lot.</p>
+            </div>
+            <Link to="/shop" className="font-medium text-ink underline underline-offset-4">
+              View all {products?.length ?? ""} products
+            </Link>
           </div>
+          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 md:grid-cols-4">
+            {featured ? featured.map((p) => <ProductCard key={p.id} product={p} />) : Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ GARANTÍA + PRUEBAS DE LABORATORIO (un solo bloque) ============ */}
+      <section data-reveal className="grid lg:grid-cols-2">
+        <div className="band-lilac relative flex min-h-[340px] items-center justify-center overflow-hidden p-10 lg:min-h-[640px]">
+          <div className="lab-grid absolute inset-0 opacity-50" aria-hidden />
+          <img src={cut(3)} alt="" className="vial float-shadow relative h-[260px] w-auto max-w-none rotate-[-10deg] rounded-none object-contain lg:h-[420px]" aria-hidden />
+          <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-full" aria-hidden />
+          <div className="absolute right-6 top-10 flex items-center gap-3 rounded-2xl bg-white/95 p-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)] backdrop-blur lg:right-12">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-soft text-navy" aria-hidden>
+              <IconShield className="h-4 w-4" />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold">99%+ purity</span>
+              <span className="block text-xs font-light text-slate">Verified by HPLC</span>
+            </span>
+          </div>
+          <Link
+            to="/coas"
+            className="absolute inset-x-6 bottom-6 flex items-center gap-4 rounded-2xl bg-white px-5 py-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)] transition-transform hover:-translate-y-0.5 lg:inset-x-12"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mist text-navy" aria-hidden>
+              <IconDoc className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold">See the certificates</span>
+              <span className="block truncate text-xs font-light text-slate">
+                {coas.data ? `${coas.data.length} lots published` : "Certificate of Analysis by lot"}
+              </span>
+            </span>
+            <svg viewBox="0 0 20 20" className="h-5 w-5 shrink-0 text-muted" fill="currentColor" aria-hidden>
+              <path d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z" />
+            </svg>
+          </Link>
         </div>
 
         <div className="flex items-center bg-white px-5 py-16 lg:px-14 lg:py-20">
@@ -383,6 +425,42 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+
+            <h3 className="mt-12 text-2xl font-semibold">Quality your lab can verify</h3>
+            <p className="mt-3 text-[1.02rem] font-light leading-relaxed text-slate">
+              Every lot is tested by an independent laboratory before release, and the full result is published on this site for your
+              quality records.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2.5" role="tablist" aria-label="Testing performed on every lot">
+              {QUALITY_TABS.map((t, i) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  role="tab"
+                  id={`qtab-${i}`}
+                  aria-selected={tab === i}
+                  aria-controls={`qpanel-${i}`}
+                  onClick={() => setTab(i)}
+                  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors ${tab === i ? "bg-ink font-medium text-white" : "bg-mist text-slate hover:bg-line"}`}
+                >
+                  <t.Icon className="h-4 w-4" />
+                  {t.key}
+                </button>
+              ))}
+            </div>
+            <div role="tabpanel" id={`qpanel-${tab}`} aria-labelledby={`qtab-${tab}`} className="mt-5 rounded-[1.5rem] border border-line bg-mist p-7">
+              <div className="flex flex-wrap items-center gap-3">
+                <h4 className="text-lg font-semibold">{active.title}</h4>
+                <span className="chip bg-white text-navy">
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal" aria-hidden />
+                  {active.method}
+                </span>
+              </div>
+              <p className="mt-3 text-[0.95rem] font-light leading-relaxed text-slate">{active.body}</p>
+            </div>
+            <Link to="/coas" className="btn btn-primary mt-7">
+              See the certificates <Arrow />
+            </Link>
           </div>
         </div>
       </section>
@@ -399,13 +477,13 @@ export default function Home() {
             Stocking the bench? <span className="serif">Up to 15% off</span> per vial.
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-lg font-light leading-relaxed text-slate">
-            Buy two units of the same product and the discount applies automatically at checkout. From three units it goes to 15%, with no
-            subscription and no minimum order.
+            Buy two vials of the same product and 10% comes off automatically at checkout. Save 15% on three or more vials of the same
+            product, with no subscription and no minimum order.
           </p>
           <ul className="mt-8 flex flex-wrap justify-center gap-2.5 text-sm">
-            <li className="chip bg-ink text-white">2 units · 10% off</li>
-            <li className="chip bg-teal-soft text-navy">3+ units · 15% off</li>
-            <li className="chip border border-line bg-white text-ink">Free U.S. shipping</li>
+            <li className="chip bg-ink text-white">2 vials · 10% off</li>
+            <li className="chip bg-teal-soft text-navy">3+ vials · 15% off</li>
+            <li className="chip border border-line bg-white text-ink">Free standard U.S. shipping</li>
           </ul>
 
           <div className="mx-auto mt-10 flex max-w-xl items-center gap-5 rounded-[1.75rem] bg-white p-5 text-left shadow-[0_28px_60px_-35px_rgba(12,42,71,0.55)]">
@@ -450,111 +528,12 @@ export default function Home() {
               </article>
             ))}
             <article className="flex flex-col items-start gap-5 rounded-[1.75rem] bg-white p-7 shadow-[0_24px_50px_-38px_rgba(12,42,71,0.5)] sm:flex-row sm:items-center sm:justify-between sm:gap-6 lg:col-span-2">
-              <h3 className="text-xl font-semibold">Free U.S. shipping on every order, no minimum</h3>
+              <h3 className="text-xl font-semibold">Standard U.S. shipping is free on every order, no minimum</h3>
               <div className="flex shrink-0 items-center gap-5">
                 <Link to="/shipping-policy" className="btn btn-ghost text-sm">Read the shipping policy</Link>
                 <IconTruck className="hidden h-16 w-16 text-muted sm:block" />
               </div>
             </article>
-          </div>
-        </div>
-      </section>
-
-      {/* ===================== CALIDAD ===================== */}
-      <section className="wrap py-20 lg:py-28" data-reveal>
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <h2 className="text-[2.1rem] font-semibold sm:text-[2.9rem]">Quality your lab can verify</h2>
-            <p className="mt-5 max-w-md text-lg font-light leading-relaxed text-slate">
-              Every lot is tested by an independent laboratory before release, and the full result is published on this site for your quality
-              records.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-2.5" role="tablist" aria-label="Testing performed on every lot">
-              {QUALITY_TABS.map((t, i) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  role="tab"
-                  id={`qtab-${i}`}
-                  aria-selected={tab === i}
-                  aria-controls={`qpanel-${i}`}
-                  onClick={() => setTab(i)}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors ${tab === i ? "bg-ink font-medium text-white" : "bg-mist text-slate hover:bg-line"}`}
-                >
-                  <t.Icon className="h-4 w-4" />
-                  {t.key}
-                </button>
-              ))}
-            </div>
-
-            <div role="tabpanel" id={`qpanel-${tab}`} aria-labelledby={`qtab-${tab}`} className="mt-6 rounded-[1.5rem] border border-line bg-mist p-7">
-              <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-xl font-semibold">{active.title}</h3>
-                <span className="chip bg-white text-navy">
-                  <span className="h-1.5 w-1.5 rounded-full bg-teal" aria-hidden />
-                  {active.method}
-                </span>
-              </div>
-              <p className="mt-3 text-[0.95rem] font-light leading-relaxed text-slate">{active.body}</p>
-            </div>
-
-            <Link to="/shop" className="btn btn-primary mt-8">
-              Shop the catalog <Arrow />
-            </Link>
-          </div>
-
-          {/* Panel con el frasco inclinado y tarjetas flotantes */}
-          <div className="relative">
-            <div className="panel-ice relative overflow-hidden rounded-[2.5rem] px-10 pb-28 pt-14">
-              <div className="lab-grid absolute inset-0 opacity-60" aria-hidden />
-              <img src={cut(4)} alt="" className="vial float-shadow relative mx-auto h-[300px] w-auto max-w-full rotate-[-12deg] rounded-none object-contain lg:h-[360px]" aria-hidden />
-              <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-full" aria-hidden />
-            </div>
-            <div className="absolute right-4 top-6 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)]">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-soft text-navy" aria-hidden>
-                <IconShield className="h-4 w-4" />
-              </span>
-              <span>
-                <span className="block text-sm font-semibold">99%+ purity</span>
-                <span className="block text-xs font-light text-slate">Verified by HPLC</span>
-              </span>
-            </div>
-            <Link
-              to="/coas"
-              className="absolute inset-x-6 bottom-6 flex items-center gap-4 rounded-2xl bg-white px-5 py-4 shadow-[0_22px_45px_-22px_rgba(12,42,71,0.45)] transition-transform hover:-translate-y-0.5"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mist text-navy" aria-hidden>
-                <IconDoc className="h-5 w-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold">See the certificates</span>
-                <span className="block truncate text-xs font-light text-slate">
-                  {coas.data ? `${coas.data.length} lots published` : "Certificate of Analysis by lot"}
-                </span>
-              </span>
-              <svg viewBox="0 0 20 20" className="h-5 w-5 shrink-0 text-muted" fill="currentColor" aria-hidden>
-                <path d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ===================== CATÁLOGO ===================== */}
-      <section className="band-ice" data-reveal>
-        <div className="wrap py-20 lg:py-24">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-[2.1rem] font-semibold sm:text-[2.9rem]">Most requested compounds</h2>
-              <p className="mt-3 text-lg font-light text-slate">Each one ships with the certificate for its lot.</p>
-            </div>
-            <Link to="/shop" className="font-medium text-ink underline underline-offset-4">
-              All {products?.length ?? ""} research peptides
-            </Link>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12 md:grid-cols-4">
-            {featured ? featured.map((p) => <ProductCard key={p.id} product={p} />) : Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
           </div>
         </div>
       </section>

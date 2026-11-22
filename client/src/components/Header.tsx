@@ -93,7 +93,7 @@ export default function Header() {
 
       {/* Franja de aviso: obligatoria y además describe el sitio en la primera línea que lee el buscador */}
       <p className="truncate bg-ink px-4 py-1.5 text-center text-[0.72rem] font-light tracking-wide text-white/85 sm:py-2 sm:text-[0.8rem]">
-        Research use only. Not for human or veterinary use.<span className="hidden sm:inline"> Free U.S. shipping on every order.</span>
+        Research use only. Not for human or veterinary use.<span className="hidden sm:inline"> Standard U.S. shipping is free.</span>
       </p>
 
       {menuOpen ? <MobileMenu top={headerH} onClose={() => setMenuOpen(false)} /> : null}

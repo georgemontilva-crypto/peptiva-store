@@ -10,6 +10,33 @@ const specNumber = (spec: string | null) => Number((spec ?? "").match(/\d+(\.\d+
 export const hasData = (l: Lot) => l.lotNumber !== "Current batch" && Boolean(l.purity);
 export const passes = (l: Lot) => Number(l.purity) >= specNumber(l.specPurity);
 
+/** Miligramos declarados en un texto: "40 mg", "MOTS-C 40mg", "10 MG". */
+export const mgOf = (text: string | null | undefined): number | null => {
+  const m = (text ?? "").match(/(\d+(?:[.,]\d+)?)\s*mg\b/i);
+  return m ? Number(m[1]!.replace(",", ".")) : null;
+};
+
+/**
+ * Certificado que corresponde a la presentación elegida.
+ *
+ * Los certificados no guardan el id de la variante, así que se emparejan por los miligramos que
+ * declara el informe, ya sea en su título o en el contenido medido. `exact` dice si de verdad hubo
+ * coincidencia: cuando no la hay se devuelve el lote principal, pero la ficha debe advertir que
+ * pertenece a otra presentación en vez de darlo por el de esta.
+ */
+export function lotForVariant(lots: Lot[], variantLabel: string | null | undefined): { lot: Lot | undefined; exact: boolean } {
+  const pool = lots.filter(hasData);
+  const candidates = pool.length ? pool : lots;
+  const want = mgOf(variantLabel);
+  if (want != null) {
+    const match = candidates.find((l) => mgOf(l.title) === want || mgOf(l.measured) === want);
+    if (match) return { lot: match, exact: true };
+  }
+  const fallback = candidates.find((l) => l.latest) ?? candidates[0];
+  // Sin variantes con miligramos no hay nada que emparejar: el lote principal es el correcto
+  return { lot: fallback, exact: want == null };
+}
+
 function Purity({ value, className }: { value: string; className: string }) {
   return (
     <span className={`font-display font-bold tabular-nums tracking-tight ${className}`}>
@@ -22,14 +49,16 @@ function Purity({ value, className }: { value: string; className: string }) {
 /** "Every lot, independently verified." — certificado principal, tabla completa y lotes en la misma sección. */
 export function VerifiedResults({ lot, lots }: { lot: Lot; lots: Lot[] }) {
   const ok = passes(lot);
-  const rows: [string, React.ReactNode, string][] = [
-    ["Appearance", lot.appearance || "—", "Meets spec"],
-    ["Purity", <span className={`font-semibold ${ok ? "text-emerald-700" : "text-alert"}`}>{lot.purity}% · {ok ? "Pass" : "Review"}</span>, lot.specPurity || "≥ 95%"],
-    ["Identity (MS)", lot.identity || "—", "Meets spec"],
-    ["Net peptide content", lot.measured || "—", "Report"],
-    ["Heavy metals", lot.heavyMetals || "—", "Pass"],
-    ["Endotoxin", lot.endotoxin || "—", "Reported"],
-  ];
+  // Solo se publican los ensayos que el informe del lote respalda: una fila con "—" y la
+  // especificación "Pass" al lado da por hecho un análisis que el laboratorio no hizo.
+  const rows = ([
+    ["Appearance", lot.appearance || null, "Meets spec"],
+    ["Purity", lot.purity ? <span className={`font-semibold ${ok ? "text-emerald-700" : "text-alert"}`}>{lot.purity}% · {ok ? "Pass" : "Review"}</span> : null, lot.specPurity || "≥ 95%"],
+    ["Identity (MS)", lot.identity || null, "Meets spec"],
+    ["Net peptide content", lot.measured || null, "Report"],
+    ["Heavy metals", lot.heavyMetals || null, "Pass"],
+    ["Endotoxin", lot.endotoxin || null, "Reported"],
+  ] as [string, React.ReactNode, string][]).filter(([, value]) => value !== null);
   const withPdf = lots.filter((l) => l.reportUrl);
 
   return (
@@ -58,7 +87,7 @@ export function VerifiedResults({ lot, lots }: { lot: Lot; lots: Lot[] }) {
           </div>
           <dl className="relative mt-10 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 text-sm">
             <div><dt className="text-white/60">Lot</dt><dd className="font-semibold">{lot.lotNumber}</dd></div>
-            <div><dt className="text-white/60">Tested</dt><dd className="font-semibold">{fmtTested(lot.testedAt)}</dd></div>
+            <div><dt className="text-white/60">Report date</dt><dd className="font-semibold">{fmtTested(lot.testedAt)}</dd></div>
           </dl>
         </div>
 
@@ -115,7 +144,7 @@ export function VerifiedResults({ lot, lots }: { lot: Lot; lots: Lot[] }) {
                   </div>
                   {hasData(l) ? (
                     <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 border-t border-line pt-3 text-xs">
-                      {[["Measured", l.measured], ["Identity", l.identity], ["Heavy metals", l.heavyMetals], ["Tested", fmtTested(l.testedAt)]].map(([k, v]) => (
+                      {([["Measured", l.measured], ["Identity", l.identity], ["Heavy metals", l.heavyMetals], ["Report date", fmtTested(l.testedAt)]] as [string, string | null][]).filter(([, v]) => v && v !== "—").map(([k, v]) => (
                         <div key={k} className="min-w-0">
                           <dt className="text-muted">{k}</dt>
                           <dd className="truncate font-semibold text-ink" title={v ?? ""}>{v || "—"}</dd>
@@ -206,7 +235,7 @@ export function LotGrid({ lots }: { lots: Lot[] }) {
                 <Purity value={l.purity!} className={`mt-4 text-4xl ${passes(l) ? "text-emerald-700" : "text-alert"}`} />
                 <p className="text-sm text-slate">HPLC purity · <span className="text-navy">{passes(l) ? "meets spec" : "below spec"}</span></p>
                 <dl className="mt-5 space-y-2.5 border-t border-line pt-4 text-sm">
-                  {[["Measured", l.measured], ["Identity", l.identity], ["Heavy metals", l.heavyMetals], ["Tested", fmtTested(l.testedAt)]].map(([k, v]) => (
+                  {([["Measured", l.measured], ["Identity", l.identity], ["Heavy metals", l.heavyMetals], ["Report date", fmtTested(l.testedAt)]] as [string, string | null][]).filter(([, v]) => v && v !== "—").map(([k, v]) => (
                     <div key={k} className="flex justify-between gap-4">
                       <dt className="text-slate">{k}</dt>
                       <dd className="text-right font-semibold text-ink">{v || "—"}</dd>

@@ -10,6 +10,7 @@ import { handleCoaFile, handleCoaUpload } from "./lib/coa-files";
 import { runMigrations } from "./db/migrate";
 import { seedAdmin, seedIfEmpty } from "./db/seed";
 import { runAbandonedCartJob } from "./lib/abandoned";
+import { registerSeoRoutes } from "./lib/seo-routes";
 
 const app = express();
 app.disable("x-powered-by");
@@ -37,6 +38,9 @@ app.get("/coa-files/:id/:name", (req, res) => {
 });
 
 app.use("/trpc", createExpressMiddleware({ router: appRouter, createContext }));
+
+// robots.txt, sitemap.xml y noindex fuera del dominio público. Antes del comodín que sirve el HTML.
+registerSeoRoutes(app);
 
 // Bankful: misma ruta que usaba WooCommerce, para no cambiar nada en su panel
 const bankfulBody = [express.urlencoded({ extended: false, limit: "100kb" }), express.json({ limit: "100kb" })];

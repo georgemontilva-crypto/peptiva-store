@@ -8,7 +8,7 @@ import ProductCard from "../components/ProductCard";
 import NotFound from "./NotFound";
 import ShipCountdown from "../components/ShipCountdown";
 import Collapsible from "../components/Collapsible";
-import { LotGrid, VerifiedResults, hasData } from "../components/ProductCoa";
+import { LotGrid, VerifiedResults, hasData, lotForVariant } from "../components/ProductCoa";
 
 const TIERS = [
   { qty: 1, pct: 0, label: "1 vial" },
@@ -101,8 +101,11 @@ export default function Product() {
   const pct = quantity >= 3 ? 15 : quantity === 2 ? 10 : 0;
   const lineTotal = unit * quantity * (1 - pct / 100);
   const needsVariant = product.variants.length > 0 && !variant;
-  const coa = product.coas[0];
-  const primaryLot = product.coas.find((l) => l.latest && hasData(l)) ?? product.coas.find(hasData);
+  // El certificado que se muestra es el de la presentación elegida, no el primero de la lista:
+  // una ficha abierta en 10 mg no puede enseñar el informe de un lote de 40 mg como si fuera suyo.
+  const { lot: matchedLot, exact: lotMatchesVariant } = lotForVariant(product.coas, variant?.label);
+  const coa = matchedLot ?? product.coas[0];
+  const primaryLot = matchedLot && hasData(matchedLot) ? matchedLot : undefined;
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10">
@@ -214,6 +217,13 @@ export default function Product() {
 
       {primaryLot ? (
         <div className="mt-20">
+          {!lotMatchesVariant && variant ? (
+            <p className="mx-auto mb-5 max-w-2xl rounded-2xl bg-mist px-5 py-4 text-center text-sm text-slate">
+              There is no published lot for the {variant.label} presentation yet. The report below belongs to lot{" "}
+              <strong className="text-ink">{primaryLot.lotNumber}</strong>
+              {primaryLot.title ? ` (${primaryLot.title})` : ""}. Your {variant.label} vial ships with its own certificate.
+            </p>
+          ) : null}
           <VerifiedResults lot={primaryLot} lots={product.coas} />
         </div>
       ) : product.coas.some((l) => l.reportUrl) ? (

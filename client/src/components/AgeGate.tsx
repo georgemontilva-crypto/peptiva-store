@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { trpc } from "../lib/trpc";
+import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo";
 
 const KEY = "peptiva.researcher.v1";
@@ -7,15 +6,20 @@ const EXIT_URL = "https://www.google.com";
 
 /**
  * Verificación de investigador al entrar (mismo texto y condiciones que el gate del sitio en WordPress):
- * dos confirmaciones obligatorias (21+ y uso de laboratorio) y email opcional que no bloquea la entrada.
+ * dos confirmaciones obligatorias, 21+ y uso de laboratorio.
+ *
+ * El cuadro solo pide la verificación. El registro opcional por correo vive en el pie de página, donde
+ * no compite con lo único que hay que hacer aquí.
+ *
+ * Mientras está abierto el foco del teclado se queda dentro: al abrirse pasa a la primera casilla y el
+ * tabulador circula entre los elementos del cuadro, sin bajar a los enlaces de la página que hay detrás.
  */
 export default function AgeGate() {
   const [show, setShow] = useState(false);
   const [age, setAge] = useState(false);
   const [research, setResearch] = useState(false);
-  const [email, setEmail] = useState("");
   const [entering, setEntering] = useState(false);
-  const subscribe = trpc.content.subscribe.useMutation();
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -29,8 +33,36 @@ export default function AgeGate() {
     if (!show) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    const focusables = () =>
+      Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? [],
+      ).filter((el) => el.offsetParent !== null);
+
+    focusables()[0]?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
+      const active = document.activeElement as HTMLElement | null;
+      if (!dialogRef.current?.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
     return () => {
       document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey, true);
     };
   }, [show]);
 
@@ -39,9 +71,6 @@ export default function AgeGate() {
   const enter = () => {
     if (!age || !research) return;
     setEntering(true);
-    const value = email.trim();
-    // El email nunca bloquea la entrada
-    if (value.includes("@")) subscribe.mutate({ email: value, source: "age_gate" });
     try {
       localStorage.setItem(KEY, "yes");
     } catch {
@@ -52,11 +81,11 @@ export default function AgeGate() {
 
   return (
     <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-y-auto bg-white px-4 py-10">
-      <div role="dialog" aria-modal="true" aria-labelledby="gate-title" className="w-full max-w-[460px] rounded-[26px] border border-line bg-white p-6 text-center shadow-[0_40px_90px_rgba(11,39,66,0.18)] sm:p-10">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="gate-title" aria-describedby="gate-intro" className="w-full max-w-[460px] rounded-[26px] border border-line bg-white p-6 text-center shadow-[0_40px_90px_rgba(11,39,66,0.18)] sm:p-10">
         <Logo variant="stacked" className="mx-auto h-20" />
         <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-teal">Premium Research Peptides</p>
         <h1 id="gate-title" className="mt-4 text-2xl font-bold tracking-tight sm:text-[1.75rem]">Researcher Verification</h1>
-        <p className="mt-2.5 text-sm leading-relaxed text-slate">
+        <p id="gate-intro" className="mt-2.5 text-sm leading-relaxed text-slate">
           Peptiva supplies research peptides exclusively to qualified researchers and laboratories for in-vitro and laboratory use.
         </p>
 
@@ -69,23 +98,6 @@ export default function AgeGate() {
             <input type="checkbox" checked={research} onChange={(e) => setResearch(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 rounded-md accent-teal" />
             <span>I am a qualified researcher and will use all products strictly for <strong className="font-bold">laboratory research — not for human consumption</strong>.</span>
           </label>
-        </div>
-
-        <div className="mt-4 text-left">
-          <label htmlFor="gate-email" className="mb-1.5 block text-xs text-slate">Get lot updates & researcher pricing (optional)</label>
-          <input
-            id="gate-email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") enter();
-            }}
-            placeholder="you@lab.com"
-            className="field rounded-[13px] bg-mist"
-          />
-          <p className="mt-1.5 text-[0.7rem] text-muted">Leave blank to skip — entry is not gated on email.</p>
         </div>
 
         <button
