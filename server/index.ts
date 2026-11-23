@@ -9,6 +9,7 @@ import { handleMedia } from "./lib/media";
 import { handleCoaFile, handleCoaUpload } from "./lib/coa-files";
 import { runMigrations } from "./db/migrate";
 import { seedAdmin, seedIfEmpty } from "./db/seed";
+import { runLegacySync } from "./lib/legacy-import";
 import { runAbandonedCartJob } from "./lib/abandoned";
 import { registerSeoRoutes } from "./lib/seo-routes";
 import { handleMediaFile, handleMediaUpload } from "./lib/media-upload";
@@ -121,6 +122,9 @@ async function main() {
   setTimeout(job, 60_000);
   setInterval(job, 5 * 60_000);
   app.listen(port, () => console.log(`[server] escuchando en :${port}`));
+
+  // Trae lo que quede en el WordPress anterior (certificados PDF) sin frenar el arranque
+  setTimeout(() => void runLegacySync(), 8_000);
 }
 
 main().catch((err) => {

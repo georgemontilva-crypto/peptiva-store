@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import LegacyFiles from "./LegacyFiles";
 import { trpc, type RouterOutputs } from "../lib/trpc";
 import { Badge, Button, Card, Field, Modal, Notice, Table, fmtDate, inputCls } from "./ui";
 
@@ -75,6 +76,7 @@ export default function Coas() {
 
   return (
     <div className="space-y-5">
+      <LegacyFiles showSaved />
       <Card>
         <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">
@@ -83,7 +85,7 @@ export default function Coas() {
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) upload(file); }} />
-            <Button onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? "Reading PDF…" : "Upload certificate PDF"}</Button>
+            <span className="shrink-0 whitespace-nowrap"><Button onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? "Reading PDF…" : "Upload certificate PDF"}</Button></span>
             <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (url) parseUrl.mutate({ url }); }}>
               <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="…or paste a PDF link" className={`${inputCls} sm:w-60`} aria-label="PDF link" />
               <Button type="submit" variant="ghost" disabled={parseUrl.isPending || !url}>{parseUrl.isPending ? "Reading…" : "Read"}</Button>

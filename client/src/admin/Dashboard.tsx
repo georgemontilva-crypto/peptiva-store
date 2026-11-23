@@ -5,6 +5,8 @@ import { Card, Empty, Notice, OrderStatusBadge, Stat, Table, fmtDate, fmtMoney }
 export default function Dashboard() {
   const q = trpc.admin.dashboard.overview.useQuery(undefined, { refetchInterval: 60_000 });
   const store = trpc.admin.insights.store.useQuery(undefined, { staleTime: 60_000 });
+  const legacy = trpc.admin.media.legacyStatus.useQuery(undefined, { staleTime: 60_000 });
+  const legacyLeft = (legacy.data?.images ?? 0) + (legacy.data?.pdfs ?? 0);
   const d = q.data;
   const st = store.data;
   if (q.isPending) return <p className="text-slate">Loading…</p>;
@@ -85,6 +87,7 @@ export default function Dashboard() {
                 {d.onHold ? <li className="flex items-center justify-between gap-3 px-5 py-3"><span>{d.onHold} order{d.onHold === 1 ? "" : "s"} on hold need a manual review</span><Link to="/admin/orders?status=on_hold" className="shrink-0 font-semibold text-navy hover:underline">Review</Link></li> : null}
                 {d.affiliates.pending ? <li className="flex items-center justify-between gap-3 px-5 py-3"><span>{d.affiliates.pending} affiliate application{d.affiliates.pending === 1 ? "" : "s"} to review</span><Link to="/admin/affiliates?status=pending" className="shrink-0 font-semibold text-navy hover:underline">Review</Link></li> : null}
                 {d.affiliates.commissionsApproved > 0 ? <li className="flex items-center justify-between gap-3 px-5 py-3"><span>{fmtMoney(d.affiliates.commissionsApproved)} in approved commissions ready to pay</span><Link to="/admin/commissions?status=approved" className="shrink-0 font-semibold text-navy hover:underline">Pay</Link></li> : null}
+                {legacyLeft ? <li className="flex items-center justify-between gap-3 px-5 py-3"><span>{legacyLeft} file{legacyLeft === 1 ? "" : "s"} still load from the old WordPress site</span><Link to="/admin/coas" className="shrink-0 font-semibold text-navy hover:underline">Copy</Link></li> : null}
                 {st.products.outOfStock ? <li className="flex items-center justify-between gap-3 px-5 py-3"><span>{st.products.outOfStock} product{st.products.outOfStock === 1 ? " is" : "s are"} marked out of stock</span><Link to="/admin/products" className="shrink-0 font-semibold text-navy hover:underline">Check</Link></li> : null}
                 {st.missingCoa.length ? (
                   <li className="flex items-center justify-between gap-3 px-5 py-3">
@@ -92,7 +95,7 @@ export default function Dashboard() {
                     <Link to="/admin/coas" className="shrink-0 font-semibold text-navy hover:underline">Upload</Link>
                   </li>
                 ) : null}
-                {!d.toShip && !d.onHold && !d.affiliates.pending && !(d.affiliates.commissionsApproved > 0) && !st.products.outOfStock && !st.missingCoa.length ? <li className="px-5 py-10 text-center text-slate">Nothing pending. Everything is up to date.</li> : null}
+                {!d.toShip && !d.onHold && !d.affiliates.pending && !(d.affiliates.commissionsApproved > 0) && !st.products.outOfStock && !st.missingCoa.length && !legacyLeft ? <li className="px-5 py-10 text-center text-slate">Nothing pending. Everything is up to date.</li> : null}
               </ul>
             </Card>
           </div>

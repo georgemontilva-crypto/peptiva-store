@@ -7,7 +7,7 @@ import { mediaUrl } from "../lib/media";
 import { mediaPath } from "../lib/media-upload";
 import { orderNumber } from "../lib/orders";
 import { postState, slugify } from "../lib/blog";
-import { importLegacyBatch, legacyReferences } from "../lib/legacy-import";
+import { importLegacyBatch, legacySummary, runLegacySync } from "../lib/legacy-import";
 import { getFaq, getPage, listPages, pageSlugs, resetFaq, resetPage, saveFaq, savePage } from "../lib/site-content";
 
 /**
@@ -345,13 +345,16 @@ const mediaRouter = router({
     }),
 
   /** Cuántos archivos siguen cargándose desde el WordPress anterior. */
-  legacyStatus: adminProcedure.query(async () => {
-    const refs = await legacyReferences();
-    return { images: refs.images.length, pdfs: refs.pdfs.length };
-  }),
+  legacyStatus: adminProcedure.query(() => legacySummary()),
 
   /** Copia una tanda de esos archivos a la base y reescribe sus referencias. */
   importLegacy: adminProcedure.input(z.object({ skip: z.array(z.string().max(1024)).max(500).default([]) })).mutation(({ input }) => importLegacyBatch(input.skip)),
+
+  /** Reintenta lo que falte, incluidos los certificados guardados que no están en ningún lote. */
+  syncLegacy: adminProcedure.mutation(async () => {
+    await runLegacySync({ manual: true });
+    return legacySummary();
+  }),
 
   update: adminProcedure.input(z.object({ id, alt: z.string().trim().max(255) })).mutation(async ({ input }) => {
     await db.update(media).set({ alt: input.alt || null }).where(eq(media.id, input.id));

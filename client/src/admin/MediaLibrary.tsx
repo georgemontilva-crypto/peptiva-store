@@ -1,64 +1,10 @@
 import { useState } from "react";
 import { trpc, type RouterOutputs } from "../lib/trpc";
+import LegacyFiles from "./LegacyFiles";
 import { UploadZone, fmtBytes } from "./mediaKit";
 import { Button, Card, Empty, Field, Modal, Notice, Pagination, fmtDate, inputCls } from "./ui";
 
 type Item = RouterOutputs["admin"]["media"]["list"]["items"][number];
-
-/**
- * Aviso mientras queden fotos o certificados alojados en el WordPress anterior, con el botón que los
- * copia a esta tienda. Va por tandas y muestra el avance; lo que falle queda listado al final.
- */
-function LegacyImport() {
-  const utils = trpc.useUtils();
-  const status = trpc.admin.media.legacyStatus.useQuery();
-  const run = trpc.admin.media.importLegacy.useMutation();
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
-  const [failed, setFailed] = useState<{ url: string; reason: string }[]>([]);
-  const total = (status.data?.images ?? 0) + (status.data?.pdfs ?? 0);
-
-  const start = async () => {
-    const skip: string[] = [];
-    const errors: { url: string; reason: string }[] = [];
-    let done = 0;
-    setFailed([]);
-    setProgress({ done: 0, total });
-    for (;;) {
-      const r = await run.mutateAsync({ skip });
-      done += r.imported;
-      for (const f of r.failed) {
-        skip.push(f.url);
-        errors.push(f);
-      }
-      setProgress({ done, total });
-      if (r.remaining <= 0) break;
-    }
-    setFailed(errors);
-    setProgress(null);
-    await Promise.all([utils.admin.media.invalidate(), utils.admin.products.invalidate(), utils.catalog.invalidate()]);
-  };
-
-  if (!status.data || (!total && !failed.length)) return null;
-  return (
-    <Notice tone={failed.length && !total ? "red" : "amber"}>
-      {total ? (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="max-w-3xl">
-            <strong>{[status.data.images ? `${status.data.images} product photo${status.data.images === 1 ? "" : "s"}` : null, status.data.pdfs ? `${status.data.pdfs} lab report PDF${status.data.pdfs === 1 ? "" : "s"}` : null].filter(Boolean).join(" and ")}</strong>{" "}
-            still load from the old WordPress site. Copy them here before the domain is moved, or they will stop loading that day.
-          </p>
-          <Button disabled={Boolean(progress)} onClick={() => void start()}>{progress ? `Copying… ${progress.done} of ${progress.total}` : "Copy them to this store"}</Button>
-        </div>
-      ) : null}
-      {failed.length ? (
-        <div className={total ? "mt-3" : ""}>
-          <p className="font-semibold">{failed.length} file{failed.length === 1 ? "" : "s"} could not be copied:</p>
-          <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">{failed.map((f) => <li key={f.url}><span className="break-all font-mono">{f.url.replace(/^https?:\/\/[^/]+/, "")}</span> — {f.reason}</li>)}</ul>
-        </div>
-      ) : null}
-    </Notice>
-  );
-}
 
 /** Biblioteca de imágenes: todo lo que se ha subido para el blog y los productos. */
 export default function MediaLibrary() {
@@ -87,7 +33,7 @@ export default function MediaLibrary() {
 
   return (
     <div className="space-y-4">
-      <LegacyImport />
+      <LegacyFiles />
       <UploadZone onUploaded={() => setPage(1)} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">

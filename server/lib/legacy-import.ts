@@ -1,5 +1,6 @@
 import { eq, like, sql } from "drizzle-orm";
 import { db, schema } from "../db";
+import content from "../data/content.json";
 import { fetchOriginal } from "./media";
 import { mediaPath, safeName, sniffImage } from "./media-upload";
 
@@ -90,17 +91,110 @@ export async function importLegacyBatch(skip: string[], size = 3) {
   const pending = [...images, ...pdfs].filter((u) => !skip.includes(u));
   const batch = pending.slice(0, size);
   const failed: { url: string; reason: string }[] = [];
+  const done: Record<string, string> = {};
   let imported = 0;
   await Promise.all(
     batch.map(async (url) => {
       try {
         const next = isPdf(url) ? await importPdf(url) : await importImage(url);
         await rewrite(url, next);
+        done[url] = next;
         imported++;
       } catch (err) {
         failed.push({ url, reason: err instanceof Error ? err.message : String(err) });
       }
     }),
   );
+  // Queda anotado para que la copia automática no vuelva a descargar lo mismo
+  if (imported) {
+    const prev = (await legacySync()) ?? { at: "", failedRuns: 0, copied: {}, failed: [] };
+    const value: LegacySync = { ...prev, at: new Date().toISOString(), copied: { ...prev.copied, ...done }, failed: prev.failed.filter((f) => !done[f.url]) };
+    await db.insert(schema.settings).values({ key: SYNC_KEY, value }).onDuplicateKeyUpdate({ set: { value } });
+  }
   return { imported, failed, remaining: pending.length - batch.length };
+}
+
+/**
+ * Copia automática al arrancar.
+ *
+ * El WordPress anterior se va a eliminar, así que la tienda no espera a que alguien pulse el botón:
+ * en cada arranque, mientras quede algo allí, lo trae sola en segundo plano. Además de los archivos
+ * que la tienda enlaza, guarda los certificados que constan en los datos del catálogo aunque hoy no
+ * estén asociados a ningún lote (otras versiones), para que no se pierdan con el servidor viejo.
+ *
+ * Lo copiado queda anotado en settings (dirección antigua → nueva), de modo que no se descarga dos
+ * veces. Si algo falla se reintenta en la misma pasada y en los arranques siguientes, hasta un tope.
+ */
+const SYNC_KEY = "legacyImport";
+const MAX_FAILED_RUNS = 6;
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export type LegacySync = { at: string; failedRuns: number; copied: Record<string, string>; failed: { url: string; reason: string }[] };
+
+export async function legacySync(): Promise<LegacySync | null> {
+  const [row] = await db.select({ value: schema.settings.value }).from(schema.settings).where(eq(schema.settings.key, SYNC_KEY));
+  return (row?.value as LegacySync | undefined) ?? null;
+}
+
+/** Certificados que figuran en los datos del catálogo, estén o no enlazados a un lote. */
+const knownPdfs = () => [...content.coas.map((c) => c.pdfUrl), ...content.coaLots.map((l) => l.reportUrl)].filter((u): u is string => typeof u === "string" && isPdf(u) && relOf(u) !== u);
+
+let running = false;
+
+export async function runLegacySync(opts: { manual?: boolean } = {}): Promise<void> {
+  if (running) return;
+  running = true;
+  try {
+    const prev = (await legacySync()) ?? { at: "", failedRuns: 0, copied: {}, failed: [] };
+    const copied = { ...prev.copied };
+    const refs = await legacyReferences();
+    const referenced = new Set([...refs.images, ...refs.pdfs]);
+    const pending = [...new Set([...referenced, ...knownPdfs()])].filter((u) => !copied[u] || referenced.has(u));
+    if (!pending.length || (!opts.manual && prev.failedRuns >= MAX_FAILED_RUNS)) return;
+
+    console.log(`[legacy] ${pending.length} archivos por traer del sitio anterior`);
+    let queue = pending;
+    let failed: LegacySync["failed"] = [];
+    for (let pass = 0; pass < (opts.manual ? 1 : 3) && queue.length; pass++) {
+      if (pass) await wait(15_000);
+      failed = [];
+      for (let i = 0; i < queue.length; i += 3) {
+        await Promise.all(
+          queue.slice(i, i + 3).map(async (url) => {
+            try {
+              const next = copied[url] ?? (isPdf(url) ? await importPdf(url) : await importImage(url));
+              copied[url] = next;
+              if (referenced.has(url)) await rewrite(url, next);
+            } catch (err) {
+              failed.push({ url, reason: err instanceof Error ? err.message : String(err) });
+            }
+          }),
+        );
+      }
+      queue = failed.map((f) => f.url);
+    }
+
+    const value: LegacySync = { at: new Date().toISOString(), failedRuns: failed.length ? prev.failedRuns + 1 : 0, copied, failed };
+    await db.insert(schema.settings).values({ key: SYNC_KEY, value }).onDuplicateKeyUpdate({ set: { value } });
+    console.log(`[legacy] ${pending.length - failed.length} archivos guardados en la tienda${failed.length ? `, ${failed.length} no se pudieron descargar` : ""}`);
+  } catch (err) {
+    console.error("[legacy] la copia automática falló", err);
+  } finally {
+    running = false;
+  }
+}
+
+/** Resumen para el admin: qué se guardó, qué falló y qué certificados guardados no están en ningún lote. */
+export async function legacySummary() {
+  const [refs, sync, lots] = await Promise.all([legacyReferences(), legacySync(), db.select({ reportUrl: schema.coaLots.reportUrl }).from(schema.coaLots)]);
+  const linked = new Set(lots.map((l) => l.reportUrl));
+  const saved = Object.entries(sync?.copied ?? {});
+  return {
+    images: refs.images.length,
+    pdfs: refs.pdfs.length,
+    saved: saved.length,
+    savedAt: sync?.at || null,
+    failed: sync?.failed ?? [],
+    unlinked: saved.filter(([old, next]) => isPdf(old) && !linked.has(next)).map(([old, next]) => ({ name: decodeURIComponent(relOf(old)), url: next })),
+  };
 }
