@@ -5,10 +5,10 @@ import path from "node:path";
 import type { Request, Response } from "express";
 
 /**
- * Proxy de imágenes del WordPress anterior.
- * Las imágenes siguen alojadas en peptivasupplies.com hasta migrarlas a R2; cargarlas directo desde el
- * navegador depende de ese servidor (caché, protección anti-hotlink, CDN). Aquí el servidor las descarga
- * una vez, las guarda en disco y las sirve desde nuestro propio dominio con caché larga.
+ * Proxy de imágenes del WordPress anterior. Queda solo como red de seguridad.
+ * Las fotos de producto ya viven en la biblioteca de la tienda (tabla `media`, ver seedProductPhotos),
+ * así que ninguna ficha pasa por aquí. Se conserva por si quedara alguna referencia antigua dentro de
+ * un texto: el servidor la descarga una vez, la guarda en disco y la sirve desde nuestro dominio.
  */
 const ORIGIN = (process.env.MEDIA_ORIGIN || "https://peptivasupplies.com").replace(/\/$/, "");
 const UPLOADS_PREFIX = /^https?:\/\/(www\.)?peptivasupplies\.com\/wp-content\/uploads\//i;

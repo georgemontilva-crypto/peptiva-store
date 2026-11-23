@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { count, eq } from "drizzle-orm";
 import { db, schema } from "./index";
 import catalog from "../data/catalog.json";
@@ -101,6 +103,49 @@ export async function seedIfEmpty() {
 
   await seedCoaLots();
   await seedBlog();
+  await seedProductPhotos();
+}
+
+/**
+ * Carga en la biblioteca las fotos de producto propias y se las asigna a cada producto.
+ *
+ * Las fotos viajan con el código (server/data/product-photos, ya optimizadas en WebP) y al arrancar se
+ * copian una sola vez a la tabla `media`, que es el almacenamiento de la tienda. Desde ahí son una
+ * imagen más de la biblioteca: se ven en el admin y se pueden cambiar. Con esto las fichas dejan de
+ * cargar la foto del WordPress anterior.
+ *
+ * No pisa nada que ya se haya cambiado: solo toca productos sin foto o cuya foto siga apuntando a
+ * WordPress, y queda anotado en settings para no repetirse en cada deploy.
+ */
+const PHOTOS_SEED_KEY = "productPhotosV1";
+const PHOTOS_DIR = path.resolve(process.cwd(), "server/data/product-photos");
+type PhotoEntry = { slug: string; file: string; width: number; height: number; alt: string };
+
+async function seedProductPhotos() {
+  const [done] = await db.select({ key: schema.settings.key }).from(schema.settings).where(eq(schema.settings.key, PHOTOS_SEED_KEY));
+  if (done) return;
+  const manifestFile = path.join(PHOTOS_DIR, "manifest.json");
+  if (!fs.existsSync(manifestFile)) {
+    console.warn("[seed] no se encontró server/data/product-photos; las fotos de producto no se cargaron");
+    return;
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")) as PhotoEntry[];
+  const isLegacy = (url: string | null) => !url || /\/wp-content\/uploads\//i.test(url) || url.startsWith("/media/wp/");
+  let assigned = 0;
+  for (const entry of manifest) {
+    const [product] = await db.select({ id: schema.products.id, imageUrl: schema.products.imageUrl, gallery: schema.products.gallery }).from(schema.products).where(eq(schema.products.slug, entry.slug));
+    const file = path.join(PHOTOS_DIR, entry.file);
+    if (!product || !isLegacy(product.imageUrl) || !fs.existsSync(file)) continue;
+    const data = fs.readFileSync(file);
+    const [ins] = await db.insert(schema.media).values({ filename: entry.file, mime: "image/webp", size: data.length, width: entry.width, height: entry.height, alt: entry.alt, data });
+    await db
+      .update(schema.products)
+      .set({ imageUrl: `/media/u/${ins.insertId}/${entry.file}`, gallery: (product.gallery ?? []).filter((g) => !isLegacy(g)) })
+      .where(eq(schema.products.id, product.id));
+    assigned++;
+  }
+  await db.insert(schema.settings).values({ key: PHOTOS_SEED_KEY, value: { at: new Date().toISOString(), assigned } });
+  console.log(`[seed] ${assigned} fotos de producto cargadas en la biblioteca`);
 }
 
 /**

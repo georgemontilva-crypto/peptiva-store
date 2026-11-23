@@ -21,6 +21,12 @@ export const VIALS = {
   semax: "/vials/semax.webp",
   tb500: "/vials/tb500.webp",
   tesamorelin: "/vials/tesamorelin.webp",
+  "ps-1": "/vials/ps-1.webp",
+  "ps-2": "/vials/ps-2.webp",
+  "ps-3": "/vials/ps-3.webp",
+  glutathione: "/vials/glutathione.webp",
+  klow: "/vials/klow.webp",
+  "pt-141": "/vials/pt-141.webp",
 } as const;
 
 /** Los tres del hero, en orden: izquierda, centro (el grande) y derecha. */
@@ -39,6 +45,7 @@ const VIAL_ALIASES: [string, string][] = [
   ["cjc1295ipamorelin", VIALS["cjc-1295-ipamorelin"]],
   ["bacteriostatic", VIALS["bacteriostatic-water"]],
   ["tesamorelin", VIALS.tesamorelin],
+  ["glutathione", VIALS.glutathione],
   ["ipamorelin", VIALS.ipamorelin],
   ["epithalon", VIALS.epithalon],
   ["melanotan1", VIALS["mt-1"]],
@@ -50,10 +57,15 @@ const VIAL_ALIASES: [string, string][] = [
   ["motsc", VIALS["mots-c"]],
   ["tb500", VIALS.tb500],
   ["semax", VIALS.semax],
+  ["pt141", VIALS["pt-141"]],
   ["glow", VIALS.glow],
+  ["klow", VIALS.klow],
   ["mots", VIALS["mots-c"]],
   ["nad", VIALS.nad],
   ["kpv", VIALS.kpv],
+  ["ps1", VIALS["ps-1"]],
+  ["ps2", VIALS["ps-2"]],
+  ["ps3", VIALS["ps-3"]],
   ["mt1", VIALS["mt-1"]],
   ["mt2", VIALS["mt-2"]],
 ];
