@@ -84,6 +84,32 @@ img { border-radius: 1rem; }
 .prose-copy strong { color: var(--color-ink); }
 .prose-copy table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .925rem; }
 .prose-copy th, .prose-copy td { border-bottom: 1px solid var(--color-line); padding: .5rem .25rem; text-align: left; }
+.prose-copy blockquote { margin: 1.25rem 0; border-left: 3px solid var(--color-teal); padding: .25rem 0 .25rem 1.1rem; color: var(--color-ink); }
+.prose-copy img { display: block; max-width: 100%; height: auto; margin: 1.5rem auto; border-radius: 1rem; }
+.prose-copy hr { margin: 2rem 0; border: 0; border-top: 1px solid var(--color-line); }
+.prose-copy ol { list-style: decimal; }
+
+/* Cuerpo de un artículo del blog: columna de lectura cómoda y tablas como fichas */
+.article-body { max-width: 44rem; font-size: 1.08rem; line-height: 1.8; }
+.article-body h2 { font-size: 1.7rem; margin-top: 2.75rem; scroll-margin-top: 7rem; }
+.article-body h3 { font-size: 1.25rem; }
+.article-body table { display: block; overflow-x: auto; border: 1px solid var(--color-line); border-radius: 1rem; font-size: .95rem; margin: 1.5rem 0; }
+.article-body thead th { background: var(--color-mist); font-weight: 600; color: var(--color-ink); white-space: nowrap; }
+.article-body th, .article-body td { padding: .8rem 1rem; vertical-align: top; }
+.article-body tbody tr:last-child td { border-bottom: 0; }
+.article-body td p, .article-body th p { margin: 0; }
+
+/* Editor de texto del admin */
+.rich-editor .ProseMirror { outline: none; min-height: inherit; }
+.rich-editor .ProseMirror > :first-child { margin-top: 0; }
+.rich-editor .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--color-muted); }
+.rich-editor .ProseMirror table { table-layout: fixed; border: 1px solid var(--color-line); }
+.rich-editor .ProseMirror th, .rich-editor .ProseMirror td { border: 1px solid var(--color-line); padding: .5rem .65rem; vertical-align: top; position: relative; }
+.rich-editor .ProseMirror th { background: var(--color-mist); font-weight: 600; }
+.rich-editor .ProseMirror td p, .rich-editor .ProseMirror th p { margin: 0; }
+.rich-editor .ProseMirror .selectedCell::after { content: ""; position: absolute; inset: 0; background: rgb(15 176 179 / .14); pointer-events: none; }
+.rich-editor .ProseMirror img.ProseMirror-selectednode { outline: 3px solid var(--color-teal); }
+.rich-editor .ProseMirror a { cursor: text; }
 }
 
 /* Sombra para imágenes recortadas: sigue la silueta, no la caja */

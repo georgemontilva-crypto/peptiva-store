@@ -11,6 +11,7 @@ import { runMigrations } from "./db/migrate";
 import { seedAdmin, seedIfEmpty } from "./db/seed";
 import { runAbandonedCartJob } from "./lib/abandoned";
 import { registerSeoRoutes } from "./lib/seo-routes";
+import { handleMediaFile, handleMediaUpload } from "./lib/media-upload";
 
 const app = express();
 app.disable("x-powered-by");
@@ -35,6 +36,17 @@ app.post("/admin-api/coa/upload", express.raw({ type: "*/*", limit: "16mb" }), (
 });
 app.get("/coa-files/:id/:name", (req, res) => {
   handleCoaFile(req, res).catch(() => res.status(500).end());
+});
+
+// Imágenes subidas desde el admin (blog y productos)
+app.post("/admin-api/media/upload", express.raw({ type: "*/*", limit: "7mb" }), (req, res) => {
+  handleMediaUpload(req, res).catch((err) => {
+    console.error("[media] error al subir", err);
+    res.status(500).json({ error: "The image could not be saved." });
+  });
+});
+app.get("/media/u/:id/:name", (req, res) => {
+  handleMediaFile(req, res).catch(() => res.status(500).end());
 });
 
 app.use("/trpc", createExpressMiddleware({ router: appRouter, createContext }));

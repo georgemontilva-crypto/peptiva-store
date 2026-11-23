@@ -352,3 +352,54 @@ export const coaFiles = mysqlTable("coa_files", {
   data: longblob("data").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+/**
+ * Imágenes subidas desde el admin (portadas del blog, fotos de producto, imágenes dentro de un artículo).
+ * Se guardan en la base, igual que los PDFs de COA: así sobreviven a cada deploy sin depender de un
+ * disco persistente ni de un servicio externo. El cliente las optimiza antes de subirlas.
+ */
+export const media = mysqlTable(
+  "media",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    filename: varchar("filename", { length: 191 }).notNull(),
+    mime: varchar("mime", { length: 64 }).notNull(),
+    size: int("size").notNull(),
+    width: int("width"),
+    height: int("height"),
+    /** Texto alternativo por defecto al insertar la imagen. */
+    alt: varchar("alt", { length: 255 }),
+    data: longblob("data").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("media_created_idx").on(t.createdAt)],
+);
+
+/**
+ * Artículos del blog ("Research Guides").
+ * Un artículo es visible cuando status = published Y published_at ya pasó: programar una publicación
+ * es simplemente poner una fecha futura, sin tareas en segundo plano.
+ */
+export const blogPosts = mysqlTable(
+  "blog_posts",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    slug: varchar("slug", { length: 191 }).notNull().unique(),
+    title: varchar("title", { length: 255 }).notNull(),
+    /** Resumen para el listado; si falta se usa la meta descripción. */
+    excerpt: text("excerpt"),
+    bodyHtml: mediumtext("body_html").notNull(),
+    coverImage: varchar("cover_image", { length: 1024 }),
+    coverAlt: varchar("cover_alt", { length: 255 }),
+    category: varchar("category", { length: 80 }),
+    /** Búsqueda objetivo del artículo: referencia interna para quien redacta, no se publica. */
+    targetKeyword: varchar("target_keyword", { length: 191 }),
+    seoTitle: varchar("seo_title", { length: 255 }),
+    seoDescription: varchar("seo_description", { length: 512 }),
+    status: mysqlEnum("status", ["draft", "published"]).notNull().default("draft"),
+    publishedAt: timestamp("published_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  (t) => [index("blog_status_idx").on(t.status, t.publishedAt)],
+);

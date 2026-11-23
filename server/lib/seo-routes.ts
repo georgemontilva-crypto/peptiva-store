@@ -1,7 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { db } from "../db";
-import { products } from "../db/schema";
+import { products, blogPosts } from "../db/schema";
 import { eq } from "drizzle-orm";
+import { liveWhere } from "./blog";
 
 /**
  * robots.txt, sitemap.xml y la cabecera de indexación.
@@ -20,6 +21,7 @@ const STATIC_PATHS: [string, string, number][] = [
   ["/", "daily", 1.0],
   ["/shop", "daily", 0.9],
   ["/coas", "weekly", 0.8],
+  ["/blog", "weekly", 0.7],
   ["/about-us", "monthly", 0.5],
   ["/faq", "monthly", 0.6],
   ["/contact", "monthly", 0.5],
@@ -69,23 +71,27 @@ export function registerSeoRoutes(app: Express) {
       // Con un tope de espera: si la base tarda o no responde, el sitemap sale igual con las páginas
       // fijas en vez de dejar la petición colgada hasta que el buscador se rinda.
       let slugs: string[] = [];
+      let posts: { slug: string; updatedAt: Date }[] = [];
       try {
-        const rows = await Promise.race([
-          db.select({ slug: products.slug }).from(products).where(eq(products.status, "active")),
+        [slugs, posts] = await Promise.race([
+          Promise.all([
+            db.select({ slug: products.slug }).from(products).where(eq(products.status, "active")).then((rows) => rows.map((r) => r.slug)),
+            db.select({ slug: blogPosts.slug, updatedAt: blogPosts.updatedAt }).from(blogPosts).where(liveWhere()),
+          ]),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error("tiempo de espera agotado")), 2500)),
         ]);
-        slugs = rows.map((r: { slug: string }) => r.slug);
       } catch (err) {
-        console.warn("[sitemap] no se pudieron leer los productos:", err instanceof Error ? err.message : err);
+        console.warn("[sitemap] no se pudieron leer productos y artículos:", err instanceof Error ? err.message : err);
       }
 
       const today = new Date().toISOString().slice(0, 10);
-      const entry = (loc: string, changefreq: string, priority: number) =>
-        `  <url>\n    <loc>${xmlEscape(SITE_URL + loc)}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority.toFixed(1)}</priority>\n  </url>`;
+      const entry = (loc: string, changefreq: string, priority: number, lastmod = today) =>
+        `  <url>\n    <loc>${xmlEscape(SITE_URL + loc)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority.toFixed(1)}</priority>\n  </url>`;
 
       const body = [
         ...STATIC_PATHS.map(([loc, freq, pri]) => entry(loc, freq, pri)),
         ...slugs.map((slug) => entry(`/product/${encodeURIComponent(slug)}`, "weekly", 0.8)),
+        ...posts.map((p) => entry(`/blog/${encodeURIComponent(p.slug)}`, "monthly", 0.6, p.updatedAt.toISOString().slice(0, 10))),
       ].join("\n");
 
       res.setHeader("Cache-Control", "public, max-age=3600");

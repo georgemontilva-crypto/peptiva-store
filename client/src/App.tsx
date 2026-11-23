@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -24,8 +24,12 @@ import CartRecover from "./pages/CartRecover";
 import CartUnsubscribe from "./pages/CartUnsubscribe";
 import AffiliateTracker from "./components/AffiliateTracker";
 import RevealManager from "./components/RevealManager";
-import AdminApp from "./admin/AdminApp";
 import NotFound from "./pages/NotFound";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+
+// El panel se descarga aparte: su editor de texto no debe pesar en la tienda que ve el cliente
+const AdminApp = lazy(() => import("./admin/AdminApp"));
 
 export default function App() {
   const { pathname } = useLocation();
@@ -38,7 +42,13 @@ export default function App() {
     (window as unknown as { __appMounted?: boolean }).__appMounted = true;
   }, []);
 
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) return <AdminApp />;
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    return (
+      <Suspense fallback={<div className="h-[100dvh] bg-mist" aria-busy="true" />}>
+        <AdminApp />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -61,6 +71,8 @@ export default function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/coas" element={<Coas />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/affiliate" element={<Affiliate />} />
           <Route path="/affiliate-account" element={<AffiliateAccount />} />
           <Route path="/affiliate-account/set-password" element={<AffiliateSetPassword />} />

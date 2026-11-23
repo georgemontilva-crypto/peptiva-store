@@ -58,7 +58,16 @@ export default function Affiliates() {
               <td className="px-4 py-3">
                 <Link to={`/admin/affiliates/${a.id}`} className="font-semibold text-navy hover:underline">{a.name}</Link>
                 <p className="text-xs text-muted">{a.email}</p>
-                {a.status === "pending" ? <p className="mt-1 max-w-xs truncate text-xs text-slate" title={a.channel ?? ""}>{a.channel} · {a.audience ?? "—"} · {fmtDate(a.createdAt)}</p> : null}
+                {a.status === "pending" ? (
+                  <>
+                    <p className="mt-1 max-w-xs truncate text-xs text-slate" title={a.channel ?? ""}>{a.channel} · {a.audience ?? "—"} · {fmtDate(a.createdAt)}</p>
+                    {/* Las acciones van junto a la solicitud: en la última columna se salían de la tabla */}
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" onClick={() => approve.mutate({ id: a.id })} disabled={approve.isPending}>Approve</Button>
+                      <Button size="sm" variant="danger" onClick={() => { if (confirm(`Reject ${a.name}?`)) reject.mutate({ id: a.id }); }}>Reject</Button>
+                    </div>
+                  </>
+                ) : null}
               </td>
               <td className="px-4 py-3"><Badge tone={AFF_STATUS[a.status]?.tone}>{AFF_STATUS[a.status]?.label}</Badge></td>
               <td className="px-4 py-3 font-mono text-xs">{a.code}</td>
@@ -69,14 +78,7 @@ export default function Affiliates() {
               <td className="px-4 py-3 font-semibold tabular-nums">{fmtMoney(a.totals.approved)}</td>
               <td className="px-4 py-3 tabular-nums">{fmtMoney(a.totals.paid)}</td>
               <td className="px-4 py-3 text-right">
-                {a.status === "pending" ? (
-                  <div className="flex justify-end gap-2">
-                    <Button size="sm" onClick={() => approve.mutate({ id: a.id })} disabled={approve.isPending}>Approve</Button>
-                    <Button size="sm" variant="danger" onClick={() => { if (confirm(`Reject ${a.name}?`)) reject.mutate({ id: a.id }); }}>Reject</Button>
-                  </div>
-                ) : (
-                  <Link to={`/admin/affiliates/${a.id}`} className="text-sm font-semibold text-navy hover:underline">Open</Link>
-                )}
+                <Link to={`/admin/affiliates/${a.id}`} className="text-sm font-semibold text-navy hover:underline">{a.status === "pending" ? "Review" : "Open"}</Link>
               </td>
             </tr>
           ))}

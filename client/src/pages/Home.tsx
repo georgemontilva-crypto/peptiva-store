@@ -5,6 +5,7 @@ import { usePageMeta, useJsonLd, SITE_URL, formatPrice } from "../lib/format";
 import { HERO_VIALS, DECOR_VIALS, VIALS, vialFor } from "../lib/site";
 import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import NewsletterForm from "../components/NewsletterForm";
+import PostCard from "../components/PostCard";
 
 const SEALS = [
   "≥99% HPLC purity",
@@ -264,7 +265,9 @@ export default function Home() {
   const faq = trpc.content.faq.useQuery();
   const [tab, setTab] = useState(0);
 
-  const featured = products?.slice(0, 8);
+  const guides = trpc.content.blog.list.useQuery({ limit: 3 });
+  // Primero los que el admin marcó como destacados; el resto conserva el orden del catálogo
+  const featured = products ? [...products].sort((a, b) => Number(b.featured) - Number(a.featured)).slice(0, 8) : undefined;
   /** Frasco recortado para la composición número i: el del producto destacado si el catálogo ya cargó. */
   const cut = (i: number) => (products?.[i] ? vialFor(products[i]!.slug, i) : (DECOR_VIALS[i % DECOR_VIALS.length] ?? HERO_VIALS[0]!));
 
@@ -537,6 +540,22 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===================== GUÍAS ===================== */}
+      {guides.data?.posts.length ? (
+        <section className="wrap pt-20 lg:pt-28" data-reveal>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-[2.1rem] font-semibold sm:text-[2.9rem]">From the research guides</h2>
+              <p className="mt-3 text-lg font-light text-slate">How to read a label, a certificate and a lot record.</p>
+            </div>
+            <Link to="/blog" className="font-medium text-ink underline underline-offset-4">All research guides</Link>
+          </div>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {guides.data.posts.map((p) => <PostCard key={p.slug} post={p} />)}
+          </div>
+        </section>
+      ) : null}
 
       {/* ===================== FAQ ===================== */}
       {faqTop?.length ? (

@@ -12,6 +12,7 @@ import { mailConfigured } from "../lib/mail";
 import { bankfulConfigured } from "../lib/bankful";
 import { CARRIERS, trackingLink } from "../lib/tracking";
 import { adminCoasRouter } from "./adminCoas";
+import { adminStoreRouters } from "./adminStore";
 
 const PAID = ["paid", "on_hold", "shipped", "completed"] as const;
 const paidWhere = inArray(schema.orders.status, [...PAID]);
@@ -441,6 +442,61 @@ const affiliatesRouter = router({
 });
 
 const commissionsRouter = router({
+  /** Cifras del programa completo: lo que se debe, lo ya pagado y la actividad del último mes. */
+  summary: adminProcedure.query(async () => {
+    const d30 = new Date(Date.now() - 30 * 86_400_000);
+    const [byStatus, paidOut, active, clicks, sales] = await Promise.all([
+      db.select({ status: schema.commissions.status, amount: sql<string>`COALESCE(SUM(${schema.commissions.amount}),0)`, n: count() }).from(schema.commissions).groupBy(schema.commissions.status),
+      db.select({ amount: sql<string>`COALESCE(SUM(${schema.payouts.amount}),0)`, n: count() }).from(schema.payouts),
+      db.select({ n: count() }).from(schema.affiliates).where(eq(schema.affiliates.status, "active")),
+      db.select({ n: count() }).from(schema.affiliateVisits).where(gte(schema.affiliateVisits.createdAt, d30)),
+      db
+        .select({ total: sql<string>`COALESCE(SUM(${schema.commissions.base}),0)`, n: count() })
+        .from(schema.commissions)
+        .where(and(gte(schema.commissions.createdAt, d30), sql`${schema.commissions.status} <> 'rejected'`)),
+    ]);
+    const of = (s: string) => byStatus.find((r) => r.status === s);
+    const settings = await getSettings();
+    return {
+      pending: Number(of("pending")?.amount ?? 0),
+      approved: Number(of("approved")?.amount ?? 0),
+      approvedCount: of("approved")?.n ?? 0,
+      paid: Number(paidOut[0]?.amount ?? 0),
+      payouts: paidOut[0]?.n ?? 0,
+      activeAffiliates: active[0]?.n ?? 0,
+      clicks30: clicks[0]?.n ?? 0,
+      sales30: Number(sales[0]?.total ?? 0),
+      orders30: sales[0]?.n ?? 0,
+      minPayout: settings.minPayout,
+      commissionRate: settings.commissionRate,
+    };
+  }),
+
+  /** Historial de pagos a afiliados, del más reciente al más antiguo. */
+  payouts: adminProcedure.query(() =>
+    db
+      .select({
+        id: schema.payouts.id, amount: schema.payouts.amount, method: schema.payouts.method, reference: schema.payouts.reference, note: schema.payouts.note,
+        createdAt: schema.payouts.createdAt, affiliateId: schema.affiliates.id, affiliateName: schema.affiliates.name,
+      })
+      .from(schema.payouts)
+      .innerJoin(schema.affiliates, eq(schema.affiliates.id, schema.payouts.affiliateId))
+      .orderBy(desc(schema.payouts.id))
+      .limit(300),
+  ),
+
+  /** Afiliados con comisiones aprobadas esperando pago, con lo que se le debe a cada uno. */
+  owed: adminProcedure.query(async () => {
+    const rows = await db
+      .select({ affiliateId: schema.affiliates.id, name: schema.affiliates.name, payoutMethod: schema.affiliates.payoutMethod, payoutDetails: schema.affiliates.payoutDetails, amount: sql<string>`SUM(${schema.commissions.amount})`, n: count() })
+      .from(schema.commissions)
+      .innerJoin(schema.affiliates, eq(schema.affiliates.id, schema.commissions.affiliateId))
+      .where(eq(schema.commissions.status, "approved"))
+      .groupBy(schema.affiliates.id, schema.affiliates.name, schema.affiliates.payoutMethod, schema.affiliates.payoutDetails)
+      .orderBy(desc(sql`SUM(${schema.commissions.amount})`));
+    return rows.map((r) => ({ ...r, amount: Number(r.amount) }));
+  }),
+
   list: adminProcedure.input(z.object({ status: z.enum(["pending", "approved", "paid", "rejected"]).optional(), ...pageInput })).query(async ({ input }) => {
     const cond = input.status ? eq(schema.commissions.status, input.status) : undefined;
     const [total] = await db.select({ n: count() }).from(schema.commissions).where(cond);
@@ -503,4 +559,5 @@ export const adminRouter = router({
   settings: settingsRouter,
   inbox: inboxRouter,
   coas: adminCoasRouter,
+  ...adminStoreRouters,
 });

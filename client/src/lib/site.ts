@@ -92,6 +92,7 @@ export const MAIN_NAV: NavItem[] = [
     label: "More",
     children: [
       { to: "/about-us", label: "About Us", description: "Our standards and sourcing" },
+      { to: "/blog", label: "Research Guides", description: "Reading labels, COAs and lot records" },
       { to: "/faq", label: "FAQ", description: "Purity, shipping and storage" },
       { to: "/track-order", label: "Track order", description: "Status and tracking number" },
       { to: "/affiliate", label: "Affiliate Program", description: "Earn on referred research orders" },

@@ -34,7 +34,7 @@ export const catalogRouter = router({
       const rows = await db
         .select({
           id: products.id, slug: products.slug, name: products.name, price: products.price,
-          salePrice: products.salePrice, imageUrl: products.imageUrl, stockStatus: products.stockStatus,
+          salePrice: products.salePrice, imageUrl: products.imageUrl, stockStatus: products.stockStatus, featured: products.featured,
         })
         .from(products)
         .where(and(...where))

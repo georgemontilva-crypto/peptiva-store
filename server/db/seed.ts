@@ -2,6 +2,7 @@ import { count, eq } from "drizzle-orm";
 import { db, schema } from "./index";
 import catalog from "../data/catalog.json";
 import content from "../data/content.json";
+import blog from "../data/blog-posts.json";
 import { hashPassword } from "../lib/auth";
 
 type CatalogProduct = (typeof catalog.products)[number];
@@ -99,6 +100,39 @@ export async function seedIfEmpty() {
   }
 
   await seedCoaLots();
+  await seedBlog();
+}
+
+/**
+ * Carga los artículos del primer mes del blog, cada uno con la fecha de su calendario editorial.
+ *
+ * Se hace una sola vez: queda anotado en settings. Si no fuera así, un artículo borrado a propósito
+ * desde el admin volvería a aparecer en el siguiente deploy. Tampoco pisa artículos que ya existan
+ * con la misma dirección.
+ */
+const BLOG_SEED_KEY = "blogSeedMonth1";
+async function seedBlog() {
+  const [done] = await db.select({ key: schema.settings.key }).from(schema.settings).where(eq(schema.settings.key, BLOG_SEED_KEY));
+  if (done) return;
+  let inserted = 0;
+  for (const p of blog.posts) {
+    const [exists] = await db.select({ id: schema.blogPosts.id }).from(schema.blogPosts).where(eq(schema.blogPosts.slug, p.slug));
+    if (exists) continue;
+    await db.insert(schema.blogPosts).values({
+      slug: p.slug,
+      title: p.title,
+      excerpt: p.excerpt,
+      bodyHtml: p.bodyHtml,
+      category: p.category,
+      targetKeyword: p.targetKeyword,
+      seoDescription: p.seoDescription,
+      status: "published",
+      publishedAt: new Date(p.publishedAt),
+    });
+    inserted++;
+  }
+  await db.insert(schema.settings).values({ key: BLOG_SEED_KEY, value: { at: new Date().toISOString(), inserted } });
+  console.log(`[seed] ${inserted} artículos del blog`);
 }
 
 /**

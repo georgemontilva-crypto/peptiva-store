@@ -24,7 +24,7 @@ export default function AffiliateDetail() {
     setPayout((p) => ({ ...p, method: a.payoutMethod ?? "" }));
   }, [a?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const refresh = () => Promise.all([utils.admin.affiliates.get.invalidate({ id }), utils.admin.affiliates.list.invalidate(), utils.admin.dashboard.overview.invalidate(), utils.admin.commissions.list.invalidate()]);
+  const refresh = () => Promise.all([utils.admin.affiliates.get.invalidate({ id }), utils.admin.affiliates.list.invalidate(), utils.admin.dashboard.overview.invalidate(), utils.admin.commissions.invalidate()]);
   const update = trpc.admin.affiliates.update.useMutation({ onSuccess: refresh });
   const approve = trpc.admin.affiliates.approve.useMutation({ onSuccess: (r) => { setLink(r.passwordLink); return refresh(); } });
   const resend = trpc.admin.affiliates.resendInvite.useMutation({ onSuccess: (r) => setLink(r.passwordLink) });

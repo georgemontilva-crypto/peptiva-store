@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "../lib/trpc";
-import { Badge, Card, Empty, Table, Tabs, fmtDate } from "./ui";
+import { Badge, Button, Card, Empty, Table, Tabs, fmtDate } from "./ui";
+import { downloadCsv } from "./Customers";
 
 export default function Inbox() {
   const [tab, setTab] = useState<"messages" | "leads">("messages");
@@ -9,7 +10,12 @@ export default function Inbox() {
 
   return (
     <div className="space-y-4">
-      <Tabs value={tab} onChange={setTab} options={[{ value: "messages", label: "Contact messages" }, { value: "leads", label: "Leads & newsletter" }]} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Tabs value={tab} onChange={setTab} options={[{ value: "messages", label: "Contact messages" }, { value: "leads", label: "Leads & newsletter" }]} />
+        {tab === "leads" && leads.data?.length ? (
+          <Button variant="ghost" onClick={() => downloadCsv(`peptiva-subscribers-${new Date().toISOString().slice(0, 10)}.csv`, ["Email", "Source", "Date"], leads.data.map((l) => [l.email, l.source, new Date(l.createdAt).toISOString().slice(0, 10)]))}>Export CSV</Button>
+        ) : null}
+      </div>
       {tab === "messages" ? (
         <Card>
           {messages.data && !messages.data.length ? <Empty>No messages yet.</Empty> : null}

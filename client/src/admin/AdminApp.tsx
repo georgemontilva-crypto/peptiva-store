@@ -15,6 +15,13 @@ import Commissions from "./Commissions";
 import Inbox from "./Inbox";
 import Settings from "./Settings";
 import Coas from "./Coas";
+import Products from "./Products";
+import ProductEdit from "./ProductEdit";
+import Blog from "./Blog";
+import BlogEdit from "./BlogEdit";
+import MediaLibrary from "./MediaLibrary";
+import Customers from "./Customers";
+import Pages from "./Pages";
 
 const icon = (d: string) => (
   <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -22,27 +29,46 @@ const icon = (d: string) => (
   </svg>
 );
 
+/**
+ * Menú por áreas de trabajo: lo que se vende, a quién, qué se muestra en la tienda, y los afiliados.
+ * El orden dentro de cada grupo va de lo que se usa a diario a lo que se toca de vez en cuando.
+ */
 const NAV = [
   { group: "Overview", items: [{ to: "/admin", label: "Dashboard", icon: icon("M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 4v3h6V4z") }] },
   {
     group: "Sales",
     items: [
       { to: "/admin/orders", label: "Orders & tracking", icon: icon("M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7M12 11v10") },
+      { to: "/admin/customers", label: "Customers", icon: icon("M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0") },
       { to: "/admin/abandoned", label: "Abandoned carts", icon: icon("M5 7h14l-1.2 11.2A2 2 0 0 1 15.8 20H8.2a2 2 0 0 1-2-1.8L5 7zM9 7V6a3 3 0 0 1 6 0v1M10 12l4 4M14 12l-4 4") },
       { to: "/admin/coupons", label: "Coupons", icon: icon("M4 8a2 2 0 0 0 2-2h12a2 2 0 0 0 2 2v8a2 2 0 0 0-2 2H6a2 2 0 0 0-2-2zM9 15l6-6M9.5 9.5h.01M14.5 14.5h.01") },
+    ],
+  },
+  {
+    group: "Catalog",
+    items: [
+      { to: "/admin/products", label: "Products", icon: icon("M9 3h6v4l3 3v9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-9l3-3zM6 13h12") },
+      { to: "/admin/coas", label: "Lab reports (COAs)", icon: icon("M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10") },
+    ],
+  },
+  {
+    group: "Content",
+    items: [
+      { to: "/admin/blog", label: "Blog articles", icon: icon("M5 4h11l3 3v13H5zM9 9h6M9 13h6M9 17h4") },
+      { to: "/admin/pages", label: "Pages & FAQ", icon: icon("M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6") },
+      { to: "/admin/media", label: "Image library", icon: icon("M4 5h16v14H4zM4 15l4.5-4.5 4 4 3-3L20 16M9 9.5h.01") },
     ],
   },
   {
     group: "Affiliates",
     items: [
       { to: "/admin/affiliates", label: "Affiliates", icon: icon("M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM22 19v-1a4 4 0 0 0-3-3.9M16 4.1a3 3 0 0 1 0 5.8") },
-      { to: "/admin/commissions", label: "Commissions", icon: icon("M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6") },
+      { to: "/admin/commissions", label: "Commissions & payouts", icon: icon("M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6") },
     ],
   },
   {
-    group: "Store",
+    group: "System",
     items: [
-      { to: "/admin/coas", label: "Lab reports (COAs)", icon: icon("M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10") },
       { to: "/admin/inbox", label: "Messages & leads", icon: icon("M4 6h16v12H4zM4 7l8 6 8-6") },
       { to: "/admin/settings", label: "Settings", icon: icon("M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1") },
     ],
@@ -53,14 +79,23 @@ const TITLES: [RegExp, string][] = [
   [/^\/admin\/?$/, "Dashboard"],
   [/^\/admin\/orders\/\d+/, "Order detail"],
   [/^\/admin\/orders/, "Orders & tracking"],
+  [/^\/admin\/customers/, "Customers"],
   [/^\/admin\/abandoned/, "Abandoned carts"],
   [/^\/admin\/coupons/, "Coupons"],
+  [/^\/admin\/products\/new/, "New product"],
+  [/^\/admin\/products\/\d+/, "Edit product"],
+  [/^\/admin\/products/, "Products"],
+  [/^\/admin\/coas/, "Lab reports (COAs)"],
+  [/^\/admin\/blog\/new/, "New article"],
+  [/^\/admin\/blog\/\d+/, "Edit article"],
+  [/^\/admin\/blog/, "Blog articles"],
+  [/^\/admin\/pages/, "Pages & FAQ"],
+  [/^\/admin\/media/, "Image library"],
   [/^\/admin\/affiliates\/\d+/, "Affiliate detail"],
   [/^\/admin\/affiliates/, "Affiliates"],
-  [/^\/admin\/commissions/, "Commissions"],
+  [/^\/admin\/commissions/, "Commissions & payouts"],
   [/^\/admin\/inbox/, "Messages & leads"],
   [/^\/admin\/settings/, "Settings"],
-  [/^\/admin\/coas/, "Lab reports (COAs)"],
 ];
 
 export default function AdminApp() {
@@ -155,6 +190,13 @@ export default function AdminApp() {
               <Route path="/admin/inbox" element={<Inbox />} />
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/coas" element={<Coas />} />
+              <Route path="/admin/products" element={<Products />} />
+              <Route path="/admin/products/:id" element={<ProductEdit />} />
+              <Route path="/admin/blog" element={<Blog />} />
+              <Route path="/admin/blog/:id" element={<BlogEdit />} />
+              <Route path="/admin/media" element={<MediaLibrary />} />
+              <Route path="/admin/customers" element={<Customers />} />
+              <Route path="/admin/pages" element={<Pages />} />
               <Route path="*" element={<p className="text-slate">Section not found. <Link to="/admin" className="text-navy underline">Go to dashboard</Link></p>} />
             </Routes>
           </ErrorBoundary>

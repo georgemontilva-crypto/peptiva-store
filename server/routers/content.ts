@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
 import { publicProcedure, rateLimit, router } from "../trpc";
@@ -7,15 +7,67 @@ import content from "../data/content.json";
 import { emailLayout, escapeHtml, sendMail, supportEmail } from "../lib/mail";
 import { uniqueAffiliateCode } from "../lib/affiliates";
 import { mediaUrl } from "../lib/media";
+import { getFaq, getPage } from "../lib/site-content";
+import { autoExcerpt, listFields, livePosts, liveSlugs, liveWhere, postState, readingMinutes, toCard, unlinkUnpublished } from "../lib/blog";
 
-export const contentRouter = router({
-  page: publicProcedure.input(z.object({ slug: z.string().max(64) })).query(({ input }) => {
-    const page = (content.pages as Record<string, { title: string; html: string }>)[input.slug];
-    if (!page) throw new TRPCError({ code: "NOT_FOUND", message: "Page not found" });
-    return page;
+const blogRouter = router({
+  /** Artículos visibles, del más reciente al más antiguo, y las categorías que tienen alguno. */
+  list: publicProcedure.input(z.object({ category: z.string().max(80).optional(), limit: z.number().int().min(1).max(200).optional() }).optional()).query(async ({ input }) => {
+    const rows = (await livePosts()).map(toCard);
+    const categories = [...new Set(rows.map((r) => r.category).filter((c): c is string => Boolean(c)))].sort();
+    const filtered = input?.category ? rows.filter((r) => r.category === input.category) : rows;
+    return { categories, total: filtered.length, posts: input?.limit ? filtered.slice(0, input.limit) : filtered };
   }),
 
-  faq: publicProcedure.query(() => content.faq),
+  /**
+   * Un artículo por su dirección. El público solo ve lo publicado; quien tiene sesión de admin puede
+   * abrir también borradores y programados, que es lo que usa el botón "Preview" del editor.
+   */
+  get: publicProcedure.input(z.object({ slug: z.string().min(1).max(191) })).query(async ({ input, ctx }) => {
+    const [post] = await db.select().from(schema.blogPosts).where(eq(schema.blogPosts.slug, input.slug));
+    const state = post ? postState(post) : null;
+    if (!post || (state !== "live" && !ctx.adminId)) throw new TRPCError({ code: "NOT_FOUND", message: "Article not found" });
+
+    const live = await liveSlugs();
+    const others = await db
+      .select(listFields)
+      .from(schema.blogPosts)
+      .where(and(liveWhere(), ne(schema.blogPosts.id, post.id)))
+      .orderBy(desc(schema.blogPosts.publishedAt))
+      .limit(40);
+    // Primero los de la misma categoría, y se completa con los más recientes
+    const related = [...others.filter((o) => o.category && o.category === post.category), ...others.filter((o) => !o.category || o.category !== post.category)].slice(0, 3).map(toCard);
+
+    return {
+      id: post.id,
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt || post.seoDescription || autoExcerpt(post.bodyHtml),
+      bodyHtml: unlinkUnpublished(post.bodyHtml, live),
+      coverImage: post.coverImage,
+      coverAlt: post.coverAlt,
+      category: post.category,
+      seoTitle: post.seoTitle,
+      seoDescription: post.seoDescription,
+      publishedAt: post.publishedAt,
+      updatedAt: post.updatedAt,
+      minutes: readingMinutes(post.bodyHtml),
+      state,
+      related,
+    };
+  }),
+});
+
+export const contentRouter = router({
+  blog: blogRouter,
+
+  page: publicProcedure.input(z.object({ slug: z.string().max(64) })).query(async ({ input }) => {
+    const page = await getPage(input.slug);
+    if (!page) throw new TRPCError({ code: "NOT_FOUND", message: "Page not found" });
+    return { title: page.title, html: page.html };
+  }),
+
+  faq: publicProcedure.query(async () => (await getFaq()).items),
 
   /** Un certificado por producto: el lote marcado como principal. */
   coas: publicProcedure.query(async () => {
