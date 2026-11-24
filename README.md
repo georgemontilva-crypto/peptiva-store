@@ -27,7 +27,7 @@ npm run dev            # API en :3001, web en :5173
 ## Admin
 
 `/admin` — pedidos y seguimiento, carritos abandonados, cupones, afiliados, comisiones, mensajes y ajustes.
-El primer administrador se crea al arrancar con `ADMIN_EMAIL` y `ADMIN_PASSWORD` (solo si no existe ninguno).
+El administrador se crea al arrancar con `ADMIN_EMAIL` y `ADMIN_PASSWORD` (mínimo 10 caracteres). Si esas variables cambian, en el siguiente arranque se aplican de nuevo: así se cambia o se recupera la contraseña. Mientras no cambien, se respeta la que se haya puesto desde Settings.
 
 ## Afiliados
 

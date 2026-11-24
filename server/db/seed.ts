@@ -5,7 +5,7 @@ import { db, schema } from "./index";
 import catalog from "../data/catalog.json";
 import content from "../data/content.json";
 import blog from "../data/blog-posts.json";
-import { hashPassword } from "../lib/auth";
+import { hashPassword, verifyPassword } from "../lib/auth";
 
 type CatalogProduct = (typeof catalog.products)[number];
 
@@ -181,24 +181,55 @@ async function seedBlog() {
 }
 
 /**
- * Crea el primer administrador con ADMIN_EMAIL y ADMIN_PASSWORD si todavía no hay ninguno.
- * Después la contraseña se cambia desde Admin → Settings (la variable ya no se usa).
+ * Administrador a partir de ADMIN_EMAIL y ADMIN_PASSWORD.
+ *
+ * Las variables mandan cuando cambian: al arrancar se comparan con las que se aplicaron la última vez
+ * y, si son distintas (o nunca se aplicaron), se crea esa cuenta o se le pone esa contraseña. Así,
+ * cambiar la clave en Railway surte efecto, y recuperar un acceso perdido es cambiar la variable.
+ * Mientras no cambien, no se toca nada: una contraseña cambiada desde Settings se conserva.
+ *
+ * Lo aplicado se recuerda como un hash con sal (igual que las contraseñas), nunca en claro.
  */
+const ADMIN_ENV_KEY = "adminEnvApplied";
+
+/** Por qué las variables no se pudieron aplicar, para decirlo en la pantalla de acceso. */
+export let adminSetupIssue: "missing" | "email" | "short" | null = null;
+
 export async function seedAdmin() {
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const password = process.env.ADMIN_PASSWORD;
+  const password = process.env.ADMIN_PASSWORD?.trim();
   const [row] = await db.select({ n: count() }).from(schema.admins);
-  if ((row?.n ?? 0) > 0) return;
+  const none = (row?.n ?? 0) === 0;
+  adminSetupIssue = null;
   if (!email || !password) {
-    console.warn("[seed] No hay administradores. Define ADMIN_EMAIL y ADMIN_PASSWORD para crear el primero.");
+    if (none) {
+      adminSetupIssue = "missing";
+      console.warn("[seed] No hay administradores. Define ADMIN_EMAIL y ADMIN_PASSWORD para crear el primero.");
+    }
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    adminSetupIssue = "email";
+    console.warn("[seed] ADMIN_EMAIL no es un correo válido; no se aplicó.");
     return;
   }
   if (password.length < 10) {
-    console.warn("[seed] ADMIN_PASSWORD debe tener al menos 10 caracteres; no se creó el administrador.");
+    adminSetupIssue = "short";
+    console.warn("[seed] ADMIN_PASSWORD debe tener al menos 10 caracteres; no se aplicó.");
     return;
   }
-  await db.insert(schema.admins).values({ email, passwordHash: hashPassword(password), name: "Admin" });
-  console.log(`[seed] administrador creado: ${email}`);
+
+  const stamp = `${email}\n${password}`;
+  const [applied] = await db.select({ value: schema.settings.value }).from(schema.settings).where(eq(schema.settings.key, ADMIN_ENV_KEY));
+  const hash = (applied?.value as { hash?: string } | undefined)?.hash;
+  const [existing] = await db.select({ id: schema.admins.id }).from(schema.admins).where(eq(schema.admins.email, email));
+  if (existing && verifyPassword(stamp, hash)) return;
+
+  if (existing) await db.update(schema.admins).set({ passwordHash: hashPassword(password) }).where(eq(schema.admins.id, existing.id));
+  else await db.insert(schema.admins).values({ email, passwordHash: hashPassword(password), name: "Admin" });
+  const value = { hash: hashPassword(stamp), at: new Date().toISOString() };
+  await db.insert(schema.settings).values({ key: ADMIN_ENV_KEY, value }).onDuplicateKeyUpdate({ set: { value } });
+  console.log(`[seed] administrador ${existing ? "actualizado" : "creado"} desde las variables: ${email}`);
 }
 
 /**

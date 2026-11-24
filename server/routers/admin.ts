@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { adminSetupIssue } from "../db/seed";
 import { and, asc, count, desc, eq, gte, inArray, like, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
@@ -30,6 +31,8 @@ const authRouter = router({
     setSessionCookie(ctx.res, COOKIE.admin, signSession("admin", admin.id, 7), 7);
     return { email: admin.email };
   }),
+  /** Si las variables del administrador no se pudieron aplicar, la pantalla de acceso lo explica. */
+  setup: publicProcedure.query(() => ({ issue: adminSetupIssue })),
   logout: publicProcedure.mutation(({ ctx }) => {
     clearSessionCookie(ctx.res, COOKIE.admin);
     return { ok: true };
