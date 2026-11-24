@@ -163,9 +163,9 @@ export default function AdminApp() {
         </nav>
         <div className="shrink-0 border-t border-line p-4 text-sm">
           <p className="truncate font-semibold text-ink" title={me.data.email}>{me.data.email}</p>
-          <div className="mt-2 flex items-center justify-between">
-            <Link to="/" className="font-semibold text-navy hover:underline">View store →</Link>
-            <button type="button" className="font-semibold text-red-700 hover:underline" onClick={() => logout.mutate()}>Log out</button>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link to="/" className="rounded-lg border border-line px-3 py-2 text-center font-semibold text-navy hover:border-navy">View store</Link>
+            <button type="button" disabled={logout.isPending} className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50" onClick={() => logout.mutate()}>Log out</button>
           </div>
         </div>
       </aside>
@@ -174,7 +174,15 @@ export default function AdminApp() {
       <div className="flex h-full min-w-0 flex-1 flex-col">
         <header className="flex h-16 shrink-0 items-center gap-3 border-b border-line bg-white px-5 lg:px-8">
           <button type="button" className="rounded-lg border border-line px-2.5 py-1.5 lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">☰</button>
-          <h1 className="font-display text-lg font-medium text-ink">{title}</h1>
+          <h1 className="min-w-0 truncate font-display text-lg font-medium text-ink">{title}</h1>
+          <div className="ml-auto flex shrink-0 items-center gap-2 text-sm">
+            <span className="hidden max-w-56 truncate text-slate xl:inline" title={me.data.email}>{me.data.email}</span>
+            <Link to="/" className="hidden rounded-lg px-3 py-2 font-semibold text-navy hover:bg-mist sm:inline-block">View store</Link>
+            <button type="button" disabled={logout.isPending} onClick={() => logout.mutate()} className="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-2 font-semibold text-ink transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:opacity-50">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" /><path d="M10 16l4-4-4-4" /><path d="M14 12H4" /></svg>
+              Log out
+            </button>
+          </div>
         </header>
         <main className="flex-1 overflow-y-auto overscroll-contain p-5 lg:p-8">
           <ErrorBoundary resetKey={pathname}>
