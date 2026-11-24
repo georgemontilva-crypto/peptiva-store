@@ -193,3 +193,12 @@ img { border-radius: 1rem; }
 }
 html, body { overflow-x: clip; }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Zona con scroll pero sin barra visible (menú lateral del admin). Se sigue desplazando con rueda, táctil y teclado. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

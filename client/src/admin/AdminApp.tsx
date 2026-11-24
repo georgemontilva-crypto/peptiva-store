@@ -140,7 +140,7 @@ export default function AdminApp() {
           </Link>
           <button type="button" className="rounded-lg p-1.5 text-slate hover:bg-mist lg:hidden" onClick={() => setOpen(false)} aria-label="Close menu">✕</button>
         </div>
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Admin">
+        <nav className="no-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-4" aria-label="Admin">
           {NAV.map((g) => (
             <div key={g.group} className="mb-5">
               <p className="px-3 pb-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted">{g.group}</p>
