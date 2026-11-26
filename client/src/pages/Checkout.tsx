@@ -22,6 +22,7 @@ export default function Checkout() {
   const payment = params.get("payment");
   const [form, setForm] = useState<Form>(empty);
   const enabled = trpc.shop.paymentsEnabled.useQuery();
+  const testMode = trpc.shop.paymentsTestMode.useQuery();
   const placeOrder = trpc.shop.placeOrder.useMutation({
     onSuccess: ({ redirectUrl }) => {
       window.location.href = redirectUrl;
@@ -97,6 +98,11 @@ export default function Checkout() {
         </details>
       ) : null}
 
+      {testMode.data ? (
+        <p role="status" className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+          <strong>Test mode.</strong> Payments go to the processor's test environment: no card is charged and no order will be shipped.
+        </p>
+      ) : null}
       {payment === "failed" ? (
         <p role="alert" className="mt-6 rounded-2xl border border-alert/30 bg-red-50 px-5 py-4 text-sm text-alert">
           Your payment was declined. Your cart is still saved, so you can try again or use a different card.

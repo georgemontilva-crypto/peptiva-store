@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
 import { externalProcedure, publicProcedure, rateLimit, router } from "../trpc";
 import { quoteCart } from "../lib/pricing";
-import { bankfulConfigured, createHostedPayment } from "../lib/bankful";
+import { bankfulConfigured, bankfulMode, createHostedPayment } from "../lib/bankful";
 import { getOrderWithItems, logOrderEvent, orderNumber, parseOrderNumber } from "../lib/orders";
 import { findActiveAffiliateByCode, resolveAttribution } from "../lib/affiliates";
 import { saveAbandonedCart } from "../lib/abandoned";
@@ -46,6 +46,8 @@ export const shopRouter = router({
     .query(({ input }) => quoteCart(input.lines, input.couponCode)),
 
   paymentsEnabled: publicProcedure.query(() => bankfulConfigured()),
+  /** true mientras los pagos apuntan al entorno de pruebas de Bankful: el checkout lo avisa. */
+  paymentsTestMode: publicProcedure.query(() => bankfulMode() === "sandbox"),
 
   /** Datos públicos de la tienda para la ficha (hora de corte de envío). */
   storeInfo: publicProcedure.query(async () => {

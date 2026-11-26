@@ -39,3 +39,12 @@ El administrador se crea al arrancar con `ADMIN_EMAIL` y `ADMIN_PASSWORD` (míni
 ## Tareas programadas
 
 Cada 5 minutos el servidor envía los recordatorios de carritos abandonados (requiere Resend).
+
+## Pagos (Bankful, página de pago alojada)
+
+El cliente paga en la página de Bankful; la tienda no ve ni guarda datos de tarjeta. Variables:
+
+- `BANKFUL_API_USERNAME` y `BANKFUL_API_PASSWORD`: las credenciales de la API. La contraseña firma cada petición.
+- `BANKFUL_SANDBOX=true`: solo para pruebas, apunta al entorno de pruebas de Bankful. Se quita al pasar a producción.
+
+En el admin, **Settings → Card payments (Bankful)** muestra el modo (sin configurar, pruebas o real) y tiene un botón **Test connection** que comprueba las credenciales sin cobrar nada. Un pedido solo se marca como pagado con una respuesta firmada por Bankful con estado `APPROVED` y por el importe del pedido; cualquier otra cosa queda en revisión manual.

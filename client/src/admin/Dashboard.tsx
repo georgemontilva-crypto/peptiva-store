@@ -24,6 +24,12 @@ export default function Dashboard() {
         </Notice>
       ) : null}
 
+      {d.health.paymentMode === "sandbox" ? (
+        <Notice tone="amber">
+          <strong>Payments are in test mode.</strong> Checkout goes to Bankful's sandbox, so no card is really charged. Switch to the live credentials before launch (<Link to="/admin/settings" className="font-semibold underline">Settings</Link>).
+        </Notice>
+      ) : null}
+
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Stat label="Sales today" value={fmtMoney(d.revenue.today.total)} hint={`${d.revenue.today.orders} orders`} />
         <Stat label="Last 7 days" value={fmtMoney(d.revenue.week.total)} hint={`${d.revenue.week.orders} orders`} />

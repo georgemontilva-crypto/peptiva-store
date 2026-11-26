@@ -3,14 +3,14 @@ import { adminSetupIssue } from "../db/seed";
 import { and, asc, count, desc, eq, gte, inArray, like, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db, schema } from "../db";
-import { adminProcedure, publicProcedure, rateLimit, router } from "../trpc";
+import { adminProcedure, externalProcedure, publicProcedure, rateLimit, router } from "../trpc";
 import { COOKIE, clearSessionCookie, hashPassword, setSessionCookie, signSession, verifyPassword } from "../lib/auth";
 import { getOrderWithItems, orderNumber, parseOrderNumber, updateOrderStatus, logOrderEvent } from "../lib/orders";
 import { affiliateTotals, createPasswordLink, normalizeCode, sendApprovalEmail, uniqueAffiliateCode } from "../lib/affiliates";
 import { runAbandonedCartJob, sendReminderNow } from "../lib/abandoned";
 import { DEFAULT_SETTINGS, getSettings, updateSettings } from "../lib/settings";
 import { mailConfigured } from "../lib/mail";
-import { bankfulConfigured } from "../lib/bankful";
+import { bankfulConfigured, bankfulMode, testBankfulConnection } from "../lib/bankful";
 import { CARRIERS, trackingLink } from "../lib/tracking";
 import { adminCoasRouter } from "./adminCoas";
 import { adminStoreRouters } from "./adminStore";
@@ -113,7 +113,7 @@ const dashboardRouter = router({
       affiliates: { pending: pendingAffiliates?.n ?? 0, commissionsPending: commissionsBy("pending"), commissionsApproved: commissionsBy("approved") },
       days,
       recent: recent.map((o) => ({ ...o, number: orderNumber(o.id) })),
-      health: { payments: bankfulConfigured(), email: mailConfigured(), sessionSecret: Boolean(process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 32) },
+      health: { payments: bankfulConfigured(), paymentMode: bankfulMode(), email: mailConfigured(), sessionSecret: Boolean(process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 32) },
     };
   }),
 });
@@ -551,6 +551,24 @@ const inboxRouter = router({
   leads: adminProcedure.query(() => db.select().from(schema.leads).orderBy(desc(schema.leads.id)).limit(500)),
 });
 
+/** Estado de la pasarela y prueba de conexión. Las credenciales viven en variables de entorno y nunca salen de ahí. */
+const paymentsRouter = router({
+  status: adminProcedure.query(async () => {
+    const [last] = await db
+      .select({ at: schema.paymentEvents.createdAt, outcome: schema.paymentEvents.outcome, signatureValid: schema.paymentEvents.signatureValid })
+      .from(schema.paymentEvents)
+      .orderBy(desc(schema.paymentEvents.id))
+      .limit(1);
+    return { mode: bankfulMode(), lastCallback: last ?? null };
+  }),
+  // Espera a Bankful, así que va sin el límite de 10 s
+  test: externalProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.adminId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Please sign in to the admin." });
+    rateLimit(`bankful-test:${ctx.adminId}`, 10, 10 * 60_000);
+    return testBankfulConnection(ctx.baseUrl);
+  }),
+});
+
 export const adminRouter = router({
   auth: authRouter,
   dashboard: dashboardRouter,
@@ -560,6 +578,7 @@ export const adminRouter = router({
   affiliates: affiliatesRouter,
   commissions: commissionsRouter,
   settings: settingsRouter,
+  payments: paymentsRouter,
   inbox: inboxRouter,
   coas: adminCoasRouter,
   ...adminStoreRouters,
